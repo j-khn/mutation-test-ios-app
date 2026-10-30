@@ -78,7 +78,7 @@ struct GeneratedDomainLogicTests {
     func testPricingAllocationLogic() {
         let logic = PricingAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 676))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 675))
@@ -178,7 +178,7 @@ struct GeneratedDomainLogicTests {
     func testInventoryAllocationLogic() {
         let logic = InventoryAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 801))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 800))
@@ -278,7 +278,7 @@ struct GeneratedDomainLogicTests {
     func testBillingAllocationLogic() {
         let logic = BillingAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 926))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 925))
@@ -378,7 +378,7 @@ struct GeneratedDomainLogicTests {
     func testShippingAllocationLogic() {
         let logic = ShippingAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1051))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1050))
@@ -478,7 +478,7 @@ struct GeneratedDomainLogicTests {
     func testLoyaltyAllocationLogic() {
         let logic = LoyaltyAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1176))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1175))
@@ -578,7 +578,7 @@ struct GeneratedDomainLogicTests {
     func testReturnsAllocationLogic() {
         let logic = ReturnsAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1301))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1300))
@@ -678,7 +678,7 @@ struct GeneratedDomainLogicTests {
     func testSubscriptionAllocationLogic() {
         let logic = SubscriptionAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1426))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1425))
@@ -778,7 +778,7 @@ struct GeneratedDomainLogicTests {
     func testPaymentsAllocationLogic() {
         let logic = PaymentsAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1551))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1550))
@@ -878,7 +878,7 @@ struct GeneratedDomainLogicTests {
     func testTaxAllocationLogic() {
         let logic = TaxAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1676))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1675))
@@ -978,7 +978,7 @@ struct GeneratedDomainLogicTests {
     func testDiscountsAllocationLogic() {
         let logic = DiscountsAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1801))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1800))
@@ -1078,7 +1078,7 @@ struct GeneratedDomainLogicTests {
     func testPromotionsAllocationLogic() {
         let logic = PromotionsAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1926))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1925))
@@ -1178,7 +1178,7 @@ struct GeneratedDomainLogicTests {
     func testOrdersAllocationLogic() {
         let logic = OrdersAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2051))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2050))
@@ -1278,7 +1278,7 @@ struct GeneratedDomainLogicTests {
     func testFulfillmentAllocationLogic() {
         let logic = FulfillmentAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2176))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2175))
@@ -1378,7 +1378,7 @@ struct GeneratedDomainLogicTests {
     func testDeliveryAllocationLogic() {
         let logic = DeliveryAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2301))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2300))
@@ -1478,7 +1478,7 @@ struct GeneratedDomainLogicTests {
     func testPackagingAllocationLogic() {
         let logic = PackagingAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2426))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2425))
@@ -1578,7 +1578,7 @@ struct GeneratedDomainLogicTests {
     func testMarketplaceAllocationLogic() {
         let logic = MarketplaceAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2551))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2550))
@@ -1678,7 +1678,7 @@ struct GeneratedDomainLogicTests {
     func testVendorAllocationLogic() {
         let logic = VendorAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2676))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2675))
@@ -1778,7 +1778,7 @@ struct GeneratedDomainLogicTests {
     func testProcurementAllocationLogic() {
         let logic = ProcurementAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2801))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2800))
@@ -1878,7 +1878,7 @@ struct GeneratedDomainLogicTests {
     func testFraudAllocationLogic() {
         let logic = FraudAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2926))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2925))
@@ -1978,7 +1978,7 @@ struct GeneratedDomainLogicTests {
     func testRiskAllocationLogic() {
         let logic = RiskAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3051))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3050))
@@ -2078,7 +2078,7 @@ struct GeneratedDomainLogicTests {
     func testWalletAllocationLogic() {
         let logic = WalletAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3176))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3175))
@@ -2178,7 +2178,7 @@ struct GeneratedDomainLogicTests {
     func testGiftCardsAllocationLogic() {
         let logic = GiftCardsAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3301))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3300))
@@ -2278,7 +2278,7 @@ struct GeneratedDomainLogicTests {
     func testMembershipAllocationLogic() {
         let logic = MembershipAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3426))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3425))
@@ -2378,7 +2378,7 @@ struct GeneratedDomainLogicTests {
     func testFinanceAllocationLogic() {
         let logic = FinanceAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3551))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3550))
@@ -2478,7 +2478,7 @@ struct GeneratedDomainLogicTests {
     func testInvoicesAllocationLogic() {
         let logic = InvoicesAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3676))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3675))
@@ -2578,7 +2578,7 @@ struct GeneratedDomainLogicTests {
     func testCreditAllocationLogic() {
         let logic = CreditAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3801))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3800))
@@ -2678,7 +2678,7 @@ struct GeneratedDomainLogicTests {
     func testRefundsAllocationLogic() {
         let logic = RefundsAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3926))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3925))
@@ -2778,7 +2778,7 @@ struct GeneratedDomainLogicTests {
     func testReconciliationAllocationLogic() {
         let logic = ReconciliationAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 4051))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 4050))
@@ -2878,7 +2878,7 @@ struct GeneratedDomainLogicTests {
     func testComplianceAllocationLogic() {
         let logic = ComplianceAllocationLogic()
         #expect(logic.settledCents(capturedCents: 1_000, refundedCents: 250) == 750)
-        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 200)
+        #expect(logic.processingFeeCents(amountCents: 10_000, feeBasisPoints: 300) == 300)
         #expect(logic.isWithinLimit(amountCents: 500, limitCents: 500))
         #expect(logic.exceedsPolicyThreshold(amountCents: 4176))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 4175))
