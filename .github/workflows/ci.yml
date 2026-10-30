@@ -1,0 +1,73 @@
+name: Swift CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: [self-hosted, macos]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Swift toolchain
+        run: |
+          set -euo pipefail
+          echo "Swift version:"
+          swift --version
+      - name: Build
+        run: swift build -v
+      - name: Unit tests
+        run: swift test -v
+
+  mutation-testing:
+    name: Mutation testing
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: [self-hosted, macos]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install swift-mutation-testing
+        run: |
+          set -euo pipefail
+          brew tap ericodx/homebrew-tools
+          brew install swift-mutation-testing
+          echo "Mutation tool: $(command -v swift-mutation-testing)"
+      - name: Run mutation analysis
+        run: swift-mutation-testing .
+      - name: Export mutation summary
+        if: always()
+        run: |
+          set -euo pipefail
+          if [[ -f mutation-summary.md ]]; then
+            cat mutation-summary.md | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Mutation summary was not produced." | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload mutation reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-reports
+          path: |
+            mutation-summary.md
+            mutation-report.json
+          if-no-files-found: warn
+
+  deploy:
+    name: Release validation
+    needs: [test, mutation-testing]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: [self-hosted, macos]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate release build
+        run: |
+          set -euo pipefail
+          swift build -c release
+          echo "Release build validated; no deployment destination is configured."

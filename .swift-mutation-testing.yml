@@ -1,0 +1,22 @@
+testing-framework: swift-testing
+operator-tier: experimental
+timeout: 30
+concurrency: 2
+sources-path: Sources/CheckoutDomain
+markdown-output: mutation-summary.md
+output: mutation-report.json
+mutators:
+  - name: RelationalOperatorReplacement
+    active: true
+  - name: BooleanLiteralReplacement
+    active: true
+  - name: LogicalOperatorReplacement
+    active: true
+  - name: ArithmeticOperatorReplacement
+    active: true
+  - name: NegateConditional
+    active: true
+  - name: SwapTernary
+    active: true
+  - name: RemoveSideEffects
+    active: true
