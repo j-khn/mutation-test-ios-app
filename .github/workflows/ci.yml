@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [master]
   workflow_dispatch:
+    inputs:
+      mutation_scope:
+        description: Mutation scope for a manually started run
+        type: choice
+        options: [diff, full]
+        default: diff
 
 permissions:
   contents: read
@@ -31,24 +37,65 @@ jobs:
   mutation-testing:
     name: Mutation testing
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'workflow_dispatch'
     runs-on: [self-hosted, macos]
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Install swift-mutation-testing
         run: |
           set -euo pipefail
           brew tap ericodx/homebrew-tools
           brew install swift-mutation-testing
           echo "Mutation tool: $(command -v swift-mutation-testing)"
-      - name: Run mutation analysis
-        run: swift-mutation-testing .
-      - name: Export mutation summary
+      - name: Run mutation analysis on changed Swift files
+        if: github.event_name != 'workflow_dispatch' || inputs.mutation_scope != 'full'
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          mkdir -p mutation-reports
+          base_sha="$BEFORE_SHA"
+          if [[ -z "$base_sha" || "$base_sha" =~ ^0+$ ]]; then
+            base_sha="$(git rev-parse HEAD^)"
+          fi
+
+          git diff --name-only --diff-filter=ACMRT "$base_sha" "$GITHUB_SHA" -- Sources/CheckoutDomain \
+            | awk '/\.swift$/' > mutation-reports/changed-source-files.txt
+
+          if [[ ! -s mutation-reports/changed-source-files.txt ]]; then
+            echo "No changed domain Swift files; mutation analysis skipped." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          while IFS= read -r source_file; do
+            report_id="$(printf '%s' "$source_file" | shasum -a 256 | cut -c1-12)"
+            echo "Running mutation analysis for $source_file"
+            swift-mutation-testing . \
+              --sources-path "$source_file" \
+              --output "mutation-reports/$report_id.json" \
+              --markdown-output "mutation-reports/$report_id.md"
+          done < mutation-reports/changed-source-files.txt
+
+      - name: Run full mutation analysis
+        if: github.event_name == 'workflow_dispatch' && inputs.mutation_scope == 'full'
+        run: |
+          set -euo pipefail
+          mkdir -p mutation-reports
+          swift-mutation-testing . \
+            --sources-path Sources/CheckoutDomain \
+            --output mutation-reports/full.json \
+            --markdown-output mutation-reports/full.md
+
+      - name: Export mutation summaries
         if: always()
         run: |
           set -euo pipefail
-          if [[ -f mutation-summary.md ]]; then
-            cat mutation-summary.md | tee -a "$GITHUB_STEP_SUMMARY"
+          if compgen -G "mutation-reports/*.md" > /dev/null; then
+            for report in mutation-reports/*.md; do
+              cat "$report" | tee -a "$GITHUB_STEP_SUMMARY"
+            done
           else
             echo "Mutation summary was not produced." | tee -a "$GITHUB_STEP_SUMMARY"
           fi
@@ -57,9 +104,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mutation-reports
-          path: |
-            mutation-summary.md
-            mutation-report.json
+          path: mutation-reports/
           if-no-files-found: warn
 
   deploy:
