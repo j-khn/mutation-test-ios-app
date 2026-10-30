@@ -15,9 +15,11 @@ jobs:
     runs-on: [self-hosted, macos]
     steps:
       - uses: actions/checkout@v4
-      - name: Select Swift toolchain
+      - name: Select Xcode toolchain
         run: |
           set -euo pipefail
+          echo "Developer directory: $(xcode-select -p)"
+          xcodebuild -version
           echo "Swift version:"
           swift --version
       - name: Build
