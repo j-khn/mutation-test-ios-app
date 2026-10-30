@@ -58,7 +58,7 @@ struct GeneratedDomainLogicTests {
         let logic = PricingForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 626))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 625))
     }
@@ -87,7 +87,7 @@ struct GeneratedDomainLogicTests {
     func testPricingRateLogic() {
         let logic = PricingRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 701))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 700))
@@ -98,7 +98,7 @@ struct GeneratedDomainLogicTests {
         let logic = PricingExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 726))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 725))
     }
@@ -108,7 +108,7 @@ struct GeneratedDomainLogicTests {
         let logic = InventoryThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 626))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 625))
     }
@@ -158,7 +158,7 @@ struct GeneratedDomainLogicTests {
         let logic = InventoryForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 751))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 750))
     }
@@ -187,7 +187,7 @@ struct GeneratedDomainLogicTests {
     func testInventoryRateLogic() {
         let logic = InventoryRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 826))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 825))
@@ -198,7 +198,7 @@ struct GeneratedDomainLogicTests {
         let logic = InventoryExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 851))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 850))
     }
@@ -208,7 +208,7 @@ struct GeneratedDomainLogicTests {
         let logic = BillingThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 751))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 750))
     }
@@ -258,7 +258,7 @@ struct GeneratedDomainLogicTests {
         let logic = BillingForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 876))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 875))
     }
@@ -287,7 +287,7 @@ struct GeneratedDomainLogicTests {
     func testBillingRateLogic() {
         let logic = BillingRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 951))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 950))
@@ -298,7 +298,7 @@ struct GeneratedDomainLogicTests {
         let logic = BillingExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 976))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 975))
     }
@@ -308,7 +308,7 @@ struct GeneratedDomainLogicTests {
         let logic = ShippingThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 876))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 875))
     }
@@ -358,7 +358,7 @@ struct GeneratedDomainLogicTests {
         let logic = ShippingForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1001))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1000))
     }
@@ -387,7 +387,7 @@ struct GeneratedDomainLogicTests {
     func testShippingRateLogic() {
         let logic = ShippingRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1076))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1075))
@@ -398,7 +398,7 @@ struct GeneratedDomainLogicTests {
         let logic = ShippingExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1101))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1100))
     }
@@ -408,7 +408,7 @@ struct GeneratedDomainLogicTests {
         let logic = LoyaltyThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 1001))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1000))
     }
@@ -458,7 +458,7 @@ struct GeneratedDomainLogicTests {
         let logic = LoyaltyForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1126))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1125))
     }
@@ -487,7 +487,7 @@ struct GeneratedDomainLogicTests {
     func testLoyaltyRateLogic() {
         let logic = LoyaltyRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1201))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1200))
@@ -498,7 +498,7 @@ struct GeneratedDomainLogicTests {
         let logic = LoyaltyExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1226))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1225))
     }
@@ -508,7 +508,7 @@ struct GeneratedDomainLogicTests {
         let logic = ReturnsThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 1126))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1125))
     }
@@ -558,7 +558,7 @@ struct GeneratedDomainLogicTests {
         let logic = ReturnsForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1251))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1250))
     }
@@ -587,7 +587,7 @@ struct GeneratedDomainLogicTests {
     func testReturnsRateLogic() {
         let logic = ReturnsRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1326))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1325))
@@ -598,7 +598,7 @@ struct GeneratedDomainLogicTests {
         let logic = ReturnsExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1351))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1350))
     }
@@ -608,7 +608,7 @@ struct GeneratedDomainLogicTests {
         let logic = SubscriptionThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 1251))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1250))
     }
@@ -658,7 +658,7 @@ struct GeneratedDomainLogicTests {
         let logic = SubscriptionForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1376))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1375))
     }
@@ -687,7 +687,7 @@ struct GeneratedDomainLogicTests {
     func testSubscriptionRateLogic() {
         let logic = SubscriptionRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1451))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1450))
@@ -698,7 +698,7 @@ struct GeneratedDomainLogicTests {
         let logic = SubscriptionExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1476))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1475))
     }
@@ -708,7 +708,7 @@ struct GeneratedDomainLogicTests {
         let logic = PaymentsThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 1376))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1375))
     }
@@ -758,7 +758,7 @@ struct GeneratedDomainLogicTests {
         let logic = PaymentsForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1501))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1500))
     }
@@ -787,7 +787,7 @@ struct GeneratedDomainLogicTests {
     func testPaymentsRateLogic() {
         let logic = PaymentsRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1576))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1575))
@@ -798,7 +798,7 @@ struct GeneratedDomainLogicTests {
         let logic = PaymentsExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1601))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1600))
     }
@@ -808,7 +808,7 @@ struct GeneratedDomainLogicTests {
         let logic = TaxThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 1501))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1500))
     }
@@ -858,7 +858,7 @@ struct GeneratedDomainLogicTests {
         let logic = TaxForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1626))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1625))
     }
@@ -887,7 +887,7 @@ struct GeneratedDomainLogicTests {
     func testTaxRateLogic() {
         let logic = TaxRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1701))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1700))
@@ -898,7 +898,7 @@ struct GeneratedDomainLogicTests {
         let logic = TaxExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1726))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1725))
     }
@@ -908,7 +908,7 @@ struct GeneratedDomainLogicTests {
         let logic = DiscountsThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 1626))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1625))
     }
@@ -958,7 +958,7 @@ struct GeneratedDomainLogicTests {
         let logic = DiscountsForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1751))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1750))
     }
@@ -987,7 +987,7 @@ struct GeneratedDomainLogicTests {
     func testDiscountsRateLogic() {
         let logic = DiscountsRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1826))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1825))
@@ -998,7 +998,7 @@ struct GeneratedDomainLogicTests {
         let logic = DiscountsExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1851))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1850))
     }
@@ -1008,7 +1008,7 @@ struct GeneratedDomainLogicTests {
         let logic = PromotionsThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 1751))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1750))
     }
@@ -1058,7 +1058,7 @@ struct GeneratedDomainLogicTests {
         let logic = PromotionsForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1876))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1875))
     }
@@ -1087,7 +1087,7 @@ struct GeneratedDomainLogicTests {
     func testPromotionsRateLogic() {
         let logic = PromotionsRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1951))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1950))
@@ -1098,7 +1098,7 @@ struct GeneratedDomainLogicTests {
         let logic = PromotionsExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 1976))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1975))
     }
@@ -1108,7 +1108,7 @@ struct GeneratedDomainLogicTests {
         let logic = OrdersThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 1876))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 1875))
     }
@@ -1158,7 +1158,7 @@ struct GeneratedDomainLogicTests {
         let logic = OrdersForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2001))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2000))
     }
@@ -1187,7 +1187,7 @@ struct GeneratedDomainLogicTests {
     func testOrdersRateLogic() {
         let logic = OrdersRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2076))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2075))
@@ -1198,7 +1198,7 @@ struct GeneratedDomainLogicTests {
         let logic = OrdersExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2101))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2100))
     }
@@ -1208,7 +1208,7 @@ struct GeneratedDomainLogicTests {
         let logic = FulfillmentThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 2001))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2000))
     }
@@ -1258,7 +1258,7 @@ struct GeneratedDomainLogicTests {
         let logic = FulfillmentForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2126))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2125))
     }
@@ -1287,7 +1287,7 @@ struct GeneratedDomainLogicTests {
     func testFulfillmentRateLogic() {
         let logic = FulfillmentRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2201))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2200))
@@ -1298,7 +1298,7 @@ struct GeneratedDomainLogicTests {
         let logic = FulfillmentExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2226))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2225))
     }
@@ -1308,7 +1308,7 @@ struct GeneratedDomainLogicTests {
         let logic = DeliveryThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 2126))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2125))
     }
@@ -1358,7 +1358,7 @@ struct GeneratedDomainLogicTests {
         let logic = DeliveryForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2251))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2250))
     }
@@ -1387,7 +1387,7 @@ struct GeneratedDomainLogicTests {
     func testDeliveryRateLogic() {
         let logic = DeliveryRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2326))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2325))
@@ -1398,7 +1398,7 @@ struct GeneratedDomainLogicTests {
         let logic = DeliveryExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2351))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2350))
     }
@@ -1408,7 +1408,7 @@ struct GeneratedDomainLogicTests {
         let logic = PackagingThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 2251))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2250))
     }
@@ -1458,7 +1458,7 @@ struct GeneratedDomainLogicTests {
         let logic = PackagingForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2376))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2375))
     }
@@ -1487,7 +1487,7 @@ struct GeneratedDomainLogicTests {
     func testPackagingRateLogic() {
         let logic = PackagingRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2451))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2450))
@@ -1498,7 +1498,7 @@ struct GeneratedDomainLogicTests {
         let logic = PackagingExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2476))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2475))
     }
@@ -1508,7 +1508,7 @@ struct GeneratedDomainLogicTests {
         let logic = MarketplaceThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 2376))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2375))
     }
@@ -1558,7 +1558,7 @@ struct GeneratedDomainLogicTests {
         let logic = MarketplaceForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2501))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2500))
     }
@@ -1587,7 +1587,7 @@ struct GeneratedDomainLogicTests {
     func testMarketplaceRateLogic() {
         let logic = MarketplaceRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2576))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2575))
@@ -1598,7 +1598,7 @@ struct GeneratedDomainLogicTests {
         let logic = MarketplaceExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2601))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2600))
     }
@@ -1608,7 +1608,7 @@ struct GeneratedDomainLogicTests {
         let logic = VendorThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 2501))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2500))
     }
@@ -1658,7 +1658,7 @@ struct GeneratedDomainLogicTests {
         let logic = VendorForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2626))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2625))
     }
@@ -1687,7 +1687,7 @@ struct GeneratedDomainLogicTests {
     func testVendorRateLogic() {
         let logic = VendorRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2701))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2700))
@@ -1698,7 +1698,7 @@ struct GeneratedDomainLogicTests {
         let logic = VendorExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2726))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2725))
     }
@@ -1708,7 +1708,7 @@ struct GeneratedDomainLogicTests {
         let logic = ProcurementThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 2626))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2625))
     }
@@ -1758,7 +1758,7 @@ struct GeneratedDomainLogicTests {
         let logic = ProcurementForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2751))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2750))
     }
@@ -1787,7 +1787,7 @@ struct GeneratedDomainLogicTests {
     func testProcurementRateLogic() {
         let logic = ProcurementRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2826))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2825))
@@ -1798,7 +1798,7 @@ struct GeneratedDomainLogicTests {
         let logic = ProcurementExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2851))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2850))
     }
@@ -1808,7 +1808,7 @@ struct GeneratedDomainLogicTests {
         let logic = FraudThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 2751))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2750))
     }
@@ -1858,7 +1858,7 @@ struct GeneratedDomainLogicTests {
         let logic = FraudForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2876))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2875))
     }
@@ -1887,7 +1887,7 @@ struct GeneratedDomainLogicTests {
     func testFraudRateLogic() {
         let logic = FraudRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2951))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2950))
@@ -1898,7 +1898,7 @@ struct GeneratedDomainLogicTests {
         let logic = FraudExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 2976))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2975))
     }
@@ -1908,7 +1908,7 @@ struct GeneratedDomainLogicTests {
         let logic = RiskThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 2876))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 2875))
     }
@@ -1958,7 +1958,7 @@ struct GeneratedDomainLogicTests {
         let logic = RiskForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3001))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3000))
     }
@@ -1987,7 +1987,7 @@ struct GeneratedDomainLogicTests {
     func testRiskRateLogic() {
         let logic = RiskRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3076))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3075))
@@ -1998,7 +1998,7 @@ struct GeneratedDomainLogicTests {
         let logic = RiskExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3101))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3100))
     }
@@ -2008,7 +2008,7 @@ struct GeneratedDomainLogicTests {
         let logic = WalletThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 3001))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3000))
     }
@@ -2058,7 +2058,7 @@ struct GeneratedDomainLogicTests {
         let logic = WalletForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3126))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3125))
     }
@@ -2087,7 +2087,7 @@ struct GeneratedDomainLogicTests {
     func testWalletRateLogic() {
         let logic = WalletRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3201))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3200))
@@ -2098,7 +2098,7 @@ struct GeneratedDomainLogicTests {
         let logic = WalletExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3226))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3225))
     }
@@ -2108,7 +2108,7 @@ struct GeneratedDomainLogicTests {
         let logic = GiftCardsThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 3126))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3125))
     }
@@ -2158,7 +2158,7 @@ struct GeneratedDomainLogicTests {
         let logic = GiftCardsForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3251))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3250))
     }
@@ -2187,7 +2187,7 @@ struct GeneratedDomainLogicTests {
     func testGiftCardsRateLogic() {
         let logic = GiftCardsRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3326))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3325))
@@ -2198,7 +2198,7 @@ struct GeneratedDomainLogicTests {
         let logic = GiftCardsExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3351))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3350))
     }
@@ -2208,7 +2208,7 @@ struct GeneratedDomainLogicTests {
         let logic = MembershipThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 3251))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3250))
     }
@@ -2258,7 +2258,7 @@ struct GeneratedDomainLogicTests {
         let logic = MembershipForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3376))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3375))
     }
@@ -2287,7 +2287,7 @@ struct GeneratedDomainLogicTests {
     func testMembershipRateLogic() {
         let logic = MembershipRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3451))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3450))
@@ -2298,7 +2298,7 @@ struct GeneratedDomainLogicTests {
         let logic = MembershipExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3476))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3475))
     }
@@ -2308,7 +2308,7 @@ struct GeneratedDomainLogicTests {
         let logic = FinanceThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 3376))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3375))
     }
@@ -2358,7 +2358,7 @@ struct GeneratedDomainLogicTests {
         let logic = FinanceForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3501))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3500))
     }
@@ -2387,7 +2387,7 @@ struct GeneratedDomainLogicTests {
     func testFinanceRateLogic() {
         let logic = FinanceRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3576))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3575))
@@ -2398,7 +2398,7 @@ struct GeneratedDomainLogicTests {
         let logic = FinanceExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3601))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3600))
     }
@@ -2408,7 +2408,7 @@ struct GeneratedDomainLogicTests {
         let logic = InvoicesThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 3501))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3500))
     }
@@ -2458,7 +2458,7 @@ struct GeneratedDomainLogicTests {
         let logic = InvoicesForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3626))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3625))
     }
@@ -2487,7 +2487,7 @@ struct GeneratedDomainLogicTests {
     func testInvoicesRateLogic() {
         let logic = InvoicesRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3701))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3700))
@@ -2498,7 +2498,7 @@ struct GeneratedDomainLogicTests {
         let logic = InvoicesExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3726))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3725))
     }
@@ -2508,7 +2508,7 @@ struct GeneratedDomainLogicTests {
         let logic = CreditThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 3626))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3625))
     }
@@ -2558,7 +2558,7 @@ struct GeneratedDomainLogicTests {
         let logic = CreditForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3751))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3750))
     }
@@ -2587,7 +2587,7 @@ struct GeneratedDomainLogicTests {
     func testCreditRateLogic() {
         let logic = CreditRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3826))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3825))
@@ -2598,7 +2598,7 @@ struct GeneratedDomainLogicTests {
         let logic = CreditExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3851))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3850))
     }
@@ -2608,7 +2608,7 @@ struct GeneratedDomainLogicTests {
         let logic = RefundsThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 3751))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3750))
     }
@@ -2658,7 +2658,7 @@ struct GeneratedDomainLogicTests {
         let logic = RefundsForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3876))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3875))
     }
@@ -2687,7 +2687,7 @@ struct GeneratedDomainLogicTests {
     func testRefundsRateLogic() {
         let logic = RefundsRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3951))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3950))
@@ -2698,7 +2698,7 @@ struct GeneratedDomainLogicTests {
         let logic = RefundsExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 3976))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3975))
     }
@@ -2708,7 +2708,7 @@ struct GeneratedDomainLogicTests {
         let logic = ReconciliationThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 3876))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 3875))
     }
@@ -2758,7 +2758,7 @@ struct GeneratedDomainLogicTests {
         let logic = ReconciliationForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 4001))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 4000))
     }
@@ -2787,7 +2787,7 @@ struct GeneratedDomainLogicTests {
     func testReconciliationRateLogic() {
         let logic = ReconciliationRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 4076))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 4075))
@@ -2798,7 +2798,7 @@ struct GeneratedDomainLogicTests {
         let logic = ReconciliationExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 4101))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 4100))
     }
@@ -2808,7 +2808,7 @@ struct GeneratedDomainLogicTests {
         let logic = ComplianceThresholdLogic()
         #expect(logic.amountCents(unitCents: 250, quantity: 4) == 1_000)
         #expect(logic.feeCents(amountCents: 1_000, rateBasisPoints: 500) == 50)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.exceedsPolicyThreshold(amountCents: 4001))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 4000))
     }
@@ -2858,7 +2858,7 @@ struct GeneratedDomainLogicTests {
         let logic = ComplianceForecastLogic()
         #expect(logic.refundCents(paidCents: 10_000, feeBasisPoints: 500) == 9_500)
         #expect(logic.daysRemaining(windowDays: 30, elapsedDays: 12) == 18)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 4126))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 4125))
     }
@@ -2887,7 +2887,7 @@ struct GeneratedDomainLogicTests {
     func testComplianceRateLogic() {
         let logic = ComplianceRateLogic()
         #expect(logic.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
-        #expect(logic.netCents(amountCents: 1_000, feeCents: 100) == 900)
+        #expect(logic.netCents(grossCents: 1_000, rateBasisPoints: 825) == 923)
         #expect(logic.validRate(rateBasisPoints: 8_250))
         #expect(logic.exceedsPolicyThreshold(amountCents: 4201))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 4200))
@@ -2898,7 +2898,7 @@ struct GeneratedDomainLogicTests {
         let logic = ComplianceExposureLogic()
         #expect(logic.discountCents(subtotalCents: 1_000, percent: 15) == 150)
         #expect(logic.cappedDiscountCents(subtotalCents: 1_000, percent: 50, capCents: 200) == 200)
-        #expect(logic.eligible(elapsedDays: 12, windowDays: 30, finalSale: false))
+        #expect(logic.eligible(subtotalCents: 1_000, minimumCents: 1_000))
         #expect(logic.exceedsPolicyThreshold(amountCents: 4226))
         #expect(!logic.exceedsPolicyThreshold(amountCents: 4225))
     }
