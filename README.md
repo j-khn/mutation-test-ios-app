@@ -10,6 +10,8 @@ A small Swift package demonstrating business logic, SwiftUI presentation, Swift 
 - `.swift-mutation-testing.yml`: mutation operators, scope, and report settings.
 - `.github/workflows/ci.yml`: build/test, master-push mutation analysis, and release-build validation on a self-hosted macOS runner.
 
+The Swift Testing suite contains about 3,000 independently executed parameterized test cases. Swift Testing's concise console summary groups these under the 27 test declarations; each argument value is executed as its own case. The cases cover promotion, tax, return/refund, delivery, inventory, loyalty, order-state, shipping, receipt formatting, and checkout calculations.
+
 ## Run locally
 
 ```sh
