@@ -1,4 +1,5 @@
 import CheckoutDomain
+import Foundation
 import Testing
 
 @Suite("Receipt formatting")
