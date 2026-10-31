@@ -6,6 +6,8 @@ public struct InventoryPolicy: Sendable {
     }
 
     public func remainingStock(available: Int, reserved: Int) -> Int {
-        max(0, available - reserved)
+        let availableUnits = max(0, available)
+        let reservedUnits = max(0, reserved)
+        return availableUnits > reservedUnits ? availableUnits - reservedUnits : 0
     }
 }

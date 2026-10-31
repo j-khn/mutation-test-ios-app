@@ -1,6 +1,7 @@
 import Foundation
 
 public enum CheckoutError: Error, Equatable {
+    case invalidUnitPrice
     case invalidQuantity
     case invalidDiscount
     case invalidTaxRate
@@ -24,6 +25,7 @@ public struct CheckoutCalculator: Sendable {
     public init() {}
 
     public func receipt(unitPriceCents: Int, quantity: Int, discountPercent: Int, taxBasisPoints: Int) throws -> CheckoutReceipt {
+        guard unitPriceCents >= 0 else { throw CheckoutError.invalidUnitPrice }
         guard quantity > 0 else { throw CheckoutError.invalidQuantity }
         guard (0...100).contains(discountPercent) else { throw CheckoutError.invalidDiscount }
         guard (0...10_000).contains(taxBasisPoints) else { throw CheckoutError.invalidTaxRate }
@@ -33,5 +35,18 @@ public struct CheckoutCalculator: Sendable {
         let taxable = subtotal - discount
         let tax = (taxable * taxBasisPoints + 5_000) / 10_000
         return CheckoutReceipt(subtotalCents: subtotal, discountCents: discount, taxCents: tax, totalCents: taxable + tax)
+    }
+}
+
+public struct ReceiptFormatter: Sendable {
+    public init() {}
+
+    public func format(cents: Int, currencyCode: String = "USD", locale: Locale = Locale(identifier: "en_US")) -> String {
+        let amount = Decimal(cents) / 100
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = currencyCode
+        formatter.locale = locale
+        return formatter.string(from: amount as NSDecimalNumber) ?? "\(currencyCode) \(amount)"
     }
 }

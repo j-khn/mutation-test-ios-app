@@ -1,53 +1,32 @@
 # MutationTest
 
-An iOS 17+ SwiftUI app with 300 business-logic files in local feature packages, Swift Testing tests, and mutation testing in GitHub Actions.
+A small iOS 17+ SwiftUI checkout app for comparing mutation-testing tools. It has **5 production Swift files** and **50 Swift Testing cases** across four local Swift packages and the app target.
 
 ## Open and run
 
-1. Open **MutationTest.xcodeproj** in Xcode 16 or later with a Swift 6 toolchain.
-2. Select the **MutationTest** scheme and an installed iPhone simulator.
+1. Open `MutationTest.xcodeproj` in Xcode with a Swift 6 toolchain.
+2. Select the `MutationTest` scheme and an installed iPhone simulator.
 3. Press **Run** to open the checkout app.
-4. Press **Command-U** to run every feature test and the app integration tests.
-
-Physical devices require your own signing team in the app target's Signing & Capabilities settings.
+4. Press **Command-U** to run the app and package tests.
 
 ## Project structure
 
-- `App/Features/Checkout`: the SwiftUI screen and app state that combine the feature packages.
-- `AppTests/Features/Checkout`: app tests that check receipt, shipping, stock, and loyalty behavior together.
-- `Modules/CheckoutDomain`: receipts, totals, formatting, order state, and orders.
-- `Modules/CheckoutPricing`: pricing, discounts, promotions, and tax.
-- `Modules/CheckoutInventory`: inventory, procurement, and packaging.
-- `Modules/CheckoutShipping`: shipping, delivery, and fulfillment.
-- `Modules/CheckoutPayments`: payments, billing, invoices, finance, refunds, and returns.
-- `Modules/CheckoutCustomer`: loyalty, membership, subscriptions, wallets, credit, and gift cards.
-- `Modules/CheckoutMarketplace`: marketplace, vendor, and reconciliation rules.
-- `Modules/CheckoutRisk`: risk, fraud, and compliance.
-- `Modules/CheckoutUI`: shared SwiftUI receipt views.
+- `App/MutationTestApp.swift`: app entry point, checkout screen, receipt view, and view model.
+- `AppTests/Features/Checkout`: app-level checkout scenarios.
+- `Modules/CheckoutDomain`: receipt calculation and currency formatting.
+- `Modules/CheckoutCustomer`: loyalty points and redemption.
+- `Modules/CheckoutInventory`: fulfillment and remaining-stock rules.
+- `Modules/CheckoutShipping`: shipping fees and weight thresholds.
 - `Configuration`: shared, Debug, and Release build settings.
 
-Each logic package has its own `Package.swift`, `Sources`, and `Tests` folders. Packages can be opened and tested separately, like the feature packages in a modular iOS app.
-
-## Which tests run?
-
-The app's **MutationTestAppTests** test target includes the test sources from all eight logic packages, plus `AppTests`. The shared `MutationTest` scheme and test plan select this full target.
-
-The original 317 test declarations and their parameterized cases are preserved. The app adds four integration tests, for 321 declarations in total. Swift Testing reports parameterized cases under their test declaration.
-
-Each generated logic file now has its own test file within its feature's test folder. For example:
-
-- Logic: `Modules/CheckoutPricing/Sources/CheckoutPricing/Pricing/PricingRateLogic.swift`
-- Tests: `Modules/CheckoutPricing/Tests/CheckoutPricingTests/Pricing/PricingRateLogicTests.swift`
+Each feature package has a `Package.swift`, one production source file, and a Swift Testing test target. The Xcode test target runs all four package test files plus the app scenario tests.
 
 ## Run from the terminal
 
-From the repository root:
+From the repository root, choose an installed simulator and run the full iOS test target:
 
 ```sh
-# Choose an installed iPhone simulator automatically.
 DESTINATION="$(python3 Scripts/select-simulator.py)"
-
-# Build and run the complete iOS test target.
 xcodebuild test \
   -project MutationTest.xcodeproj \
   -scheme MutationTest \
@@ -57,59 +36,47 @@ xcodebuild test \
   CODE_SIGNING_ALLOWED=NO
 ```
 
-To test one package without starting the app:
+To run a single package's tests without starting the app:
 
 ```sh
-swift test --package-path Modules/CheckoutPricing
+swift test --package-path Modules/CheckoutDomain
 ```
-
-## Add files and packages
-
-- Add logic inside a package's `Sources/<Module>` folder and tests inside its `Tests/<Module>Tests` folder. The package and Xcode synchronized folders pick them up automatically.
-- Add app code inside `App` and app tests inside `AppTests`. Xcode picks these up automatically too.
-- To add a new package, place it at `Modules/<Module>` with a library product named `<Module>`, then run `python3 Scripts/generate-project.py`. Commit the generated project and test plan. The script adds the package and its test sources to the app project.
-- Packages should depend only on the specific packages they use. `CheckoutUI`, for example, depends on `CheckoutDomain`; the app combines the features.
 
 ## GitHub Actions
 
-The existing job names are retained and now use the Xcode project:
+The `iOS CI` workflow runs on pushes and pull requests targeting `master`, and on manual dispatch:
 
-- `test`: builds the iOS app and runs the full test target on an installed iPhone simulator.
-- `mutation-testing`: runs `ericodx/swift-mutation-testing` in Xcode mode.
-- `deploy`: validates the Release build. App Store upload is not configured.
+- `test`: builds the iOS app and runs all 50 tests on an iPhone simulator.
+- `mutation-testing`: runs `ericodx/swift-mutation-testing` on changed source files and the full test target.
+- `mutation-testing-using-mutest-swift`: runs `mutest-swift` on the same changed sources and full test target.
+- `deploy`: validates the Release build; App Store upload is not configured.
 
-Pushes to `master` mutate changed files under `App` and package `Sources` folders. The active mutation job keeps the full test target selected. Test files and package manifests are not mutated. The `mutest-swift` job is temporarily commented out while the Xcode setup is validated.
-
-For a full mutation run, open Actions, choose **iOS CI**, then **Run workflow**, and set `mutation_scope` to `full`. Disable `mutation_cache` for a clean benchmark. `base_sha` overrides the comparison commit for changed-source analysis.
-
-The runner needs the labels `[self-hosted, macos]`, full Xcode, Python 3, Homebrew, and an installed iPhone simulator running iOS 17 or later. The workflow checks Xcode and selects an available simulator automatically.
+For a full mutation run, open Actions, choose **iOS CI**, then **Run workflow**, and set `mutation_scope` to `full`. Turn off `mutation_cache` for a clean benchmark. The runner needs the labels `[self-hosted, macos]`, Xcode, Python 3, Homebrew, and an available iPhone simulator.
 
 ## Run mutation testing locally
 
-The repository root is an Xcode project, with no root `Package.swift`. Feature packages remain inside `Modules`.
+The repository root is an Xcode project, with local feature packages under `Modules`.
 
 ```sh
-# Existing mutation tool: one source file, full app test target.
+DESTINATION="$(python3 Scripts/select-simulator.py)"
+
+# ericodx/swift-mutation-testing: mutate one source file; run the full test target.
 swift-mutation-testing . \
   --project MutationTest.xcodeproj \
   --scheme MutationTest \
   --target MutationTestAppTests \
-  --destination "$(python3 Scripts/select-simulator.py)" \
-  --sources-path Modules/CheckoutPricing/Sources/CheckoutPricing/Pricing/PricingRateLogic.swift \
-  --xcodebuild-arg CODE_SIGNING_ALLOWED=NO
-```
+  --destination "$DESTINATION" \
+  --sources-path Modules/CheckoutDomain/Sources/CheckoutDomain/CheckoutCalculator.swift
 
-For `mutest-swift`, use these project and test settings with its executable:
-
-```sh
-swift-mutation-testing run \
+# mutest-swift: same project, source, and full test target.
+mutest-swift run \
   --project MutationTest.xcodeproj \
   --project-kind xcode-project \
   --scheme MutationTest \
   --test-target MutationTestAppTests \
-  --destination "$(python3 Scripts/select-simulator.py)" \
-  --source Modules/CheckoutPricing/Sources/CheckoutPricing/Pricing/PricingRateLogic.swift \
+  --destination "$DESTINATION" \
+  --source Modules/CheckoutDomain/Sources/CheckoutDomain/CheckoutCalculator.swift \
   --operator-tier experimental
 ```
 
-The two tools currently use the same executable name; run the executable belonging to the tool you installed. Use the two separate workflow jobs to compare them without changing your terminal installation.
+The tools may use the same executable name when installed from different sources. Use the executable for the tool you want to run.

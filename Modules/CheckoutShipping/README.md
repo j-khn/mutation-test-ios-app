@@ -1,9 +1,9 @@
 # CheckoutShipping
 
-Shipping costs, delivery estimates, zones, and fulfillment policies.
+Shipping fees with free-shipping and parcel-weight thresholds.
 
-- `Sources/CheckoutShipping`: 32 logic files, grouped by responsibility.
-- `Tests/CheckoutShippingTests`: 32 test files, using Swift Testing.
+- `Sources/CheckoutShipping`: `ShippingCalculator.swift`.
+- `Tests/CheckoutShippingTests`: focused fee and threshold cases, using Swift Testing.
 
 Open `../../MutationTest.xcodeproj` and select the `MutationTest` scheme to run these tests together with all other feature and app tests on an iOS simulator.
 The `MutationTestAppTests` Xcode target references these test sources directly; there are no duplicate test implementations.

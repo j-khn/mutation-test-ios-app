@@ -6,7 +6,7 @@ public struct LoyaltyPointsCalculator: Sendable {
     }
 
     public func redemptionValueCents(points: Int, availableBalance: Int) -> Int? {
-        guard points > 0, points <= availableBalance else { return nil }
+        guard points > 0, points <= availableBalance, points <= Int.max / 2 else { return nil }
         return points * 2
     }
 }
