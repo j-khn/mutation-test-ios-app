@@ -154,10 +154,7 @@ jobs:
             mutest-xcode-v1-${{ runner.os }}-${{ github.ref_name }}-
       - name: Run mutest-swift through Xcode with all tests
         if: steps.sources.outputs.has_sources == 'true'
-        env:
-          ARCHS: arm64
-          ONLY_ACTIVE_ARCH: YES
-        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@3ac11c3d3c51012ebc74c9011a009160146a7d76
+        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@e84e5a5be96d60d52d6bd9ea122c445a7e876771
         with:
           project-path: MutationTest.xcodeproj
           project-kind: xcode-project
@@ -175,6 +172,10 @@ jobs:
           no-resume: ${{ github.event_name == 'workflow_dispatch' }}
           maximum-integrity-warnings: "0"
           output-path: mutest-swift-reports
+          xcodebuild-arg: |
+            ARCHS=arm64
+            ONLY_ACTIVE_ARCH=YES
+            CODE_SIGNING_ALLOWED=NO
 
   deploy:
     name: Release validation
