@@ -2,7 +2,9 @@ public struct InventoryPolicy: Sendable {
     public init() {}
 
     public func canFulfill(requested: Int, available: Int, isDiscontinued: Bool) -> Bool {
-        requested > 0 && available >= requested && !isDiscontinued
+        guard !isDiscontinued else { return false }
+        guard requested > 0 else { return false }
+        return available >= requested
     }
 
     public func remainingStock(available: Int, reserved: Int) -> Int {
