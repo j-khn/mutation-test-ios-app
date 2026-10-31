@@ -1,0 +1,10 @@
+IPHONEOS_DEPLOYMENT_TARGET = 17.0
+SDKROOT = iphoneos
+SWIFT_VERSION = 6.0
+CLANG_ENABLE_MODULES = YES
+ENABLE_TESTABILITY = YES
+GENERATE_INFOPLIST_FILE = YES
+SUPPORTED_PLATFORMS = iphoneos iphonesimulator
+TARGETED_DEVICE_FAMILY = 1,2
+CODE_SIGN_STYLE = Automatic
+// Set your development team in Xcode before running on a physical device.

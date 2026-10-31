@@ -1,0 +1,28 @@
+{
+  "configurations": [
+    {
+      "id": "CE35FF50-10C0-4CE0-926F-645112AE2DA9",
+      "name": "Default",
+      "options": {}
+    }
+  ],
+  "defaultOptions": {
+    "codeCoverage": true,
+    "targetForVariableExpansion": {
+      "containerPath": "container:MutationTest.xcodeproj",
+      "identifier": "A172CEDCAE47474B615C54D5",
+      "name": "MutationTest"
+    }
+  },
+  "testTargets": [
+    {
+      "parallelizable": false,
+      "target": {
+        "containerPath": "container:MutationTest.xcodeproj",
+        "identifier": "59830EBC3A4184110566BF1A",
+        "name": "MutationTestAppTests"
+      }
+    }
+  ],
+  "version": 1
+}

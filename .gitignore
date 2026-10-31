@@ -1,0 +1,14 @@
+.DS_Store
+.build/
+.swiftpm/
+DerivedData/
+.build-xcode/
+**/xcuserdata/
+*.xcuserstate
+*.xcresult/
+.swift-mutation-testing/
+.mutest-swift-cache/
+mutation-reports/
+mutest-swift-reports/
+mutation-report.json
+mutation-summary.md

@@ -1,0 +1,15 @@
+import CheckoutPayments
+import Testing
+
+@Suite("BillingEligibilityLogic")
+struct BillingEligibilityLogicTests {
+    @Test("BillingEligibilityLogic policy calculations")
+    func testBillingEligibilityLogic() {
+        let logic = BillingEligibilityLogic()
+        #expect(logic.cycleChargeCents(monthlyCents: 1_200, cycles: 3) == 3_600)
+        #expect(logic.trialDaysRemaining(trialDays: 14, elapsedDays: 5) == 9)
+        #expect(logic.shouldRenew(isActive: true, paymentValid: true))
+        #expect(logic.exceedsPolicyThreshold(amountCents: 901))
+        #expect(!logic.exceedsPolicyThreshold(amountCents: 900))
+    }
+}

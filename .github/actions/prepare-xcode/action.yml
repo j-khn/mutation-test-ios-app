@@ -1,0 +1,17 @@
+name: Prepare Xcode
+description: Select Xcode and an installed iPhone simulator
+runs:
+  using: composite
+  steps:
+    - name: Select Xcode toolchain
+      shell: bash
+      run: |
+        set -euo pipefail
+        export DEVELOPER_DIR="/Applications/Xcode.app/Contents/Developer"
+        test -d "$DEVELOPER_DIR" || { echo "Install Xcode.app on this runner."; exit 1; }
+        echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+        xcodebuild -version
+        swift --version
+        fingerprint="$( { xcode-select -p; xcodebuild -version; swift --version; } | shasum -a 256 | awk '{print $1}')"
+        echo "MUTEST_TOOLCHAIN_FINGERPRINT=$fingerprint" >> "$GITHUB_ENV"
+        python3 Scripts/select-simulator.py --github-env

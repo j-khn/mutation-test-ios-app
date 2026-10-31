@@ -1,4 +1,4 @@
-name: Swift CI
+name: iOS CI
 
 on:
   push:
@@ -8,16 +8,16 @@ on:
   workflow_dispatch:
     inputs:
       mutation_scope:
-        description: Mutation scope for a manually started run
+        description: Mutate changed source files or all app and feature source files
         type: choice
         options: [diff, full]
         default: diff
-      mutest_cache:
-        description: Reuse previous mutest-swift verdicts (disable for a clean speed benchmark)
+      mutation_cache:
+        description: Reuse mutation results (disable for a clean benchmark)
         type: boolean
         default: true
-      mutest_base_sha:
-        description: Optional base commit for the mutest-swift changed-source run
+      base_sha:
+        description: Optional base commit for changed-source analysis
         type: string
         default: ""
 
@@ -26,21 +26,33 @@ permissions:
 
 jobs:
   test:
-    name: Build and test
+    name: Build and test iOS app
     runs-on: [self-hosted, macos]
     steps:
       - uses: actions/checkout@v4
-      - name: Select Xcode toolchain
+      - uses: ./.github/actions/prepare-xcode
+      - name: Check project structure
+        run: |
+          python3 Scripts/generate-project.py
+          git diff --exit-code -- MutationTest.xcodeproj MutationTest.xctestplan
+      - name: Build app and all feature tests
         run: |
           set -euo pipefail
-          echo "Developer directory: $(xcode-select -p)"
-          xcodebuild -version
-          echo "Swift version:"
-          swift --version
-      - name: Build
-        run: swift build -v
-      - name: Unit tests
-        run: swift test -v
+          xcodebuild build-for-testing -project MutationTest.xcodeproj -scheme MutationTest \
+            -destination "$IOS_DESTINATION" -derivedDataPath .build-xcode CODE_SIGNING_ALLOWED=NO
+      - name: Run all tests on iOS Simulator
+        run: |
+          set -euo pipefail
+          xcodebuild test-without-building -project MutationTest.xcodeproj -scheme MutationTest \
+            -destination "$IOS_DESTINATION" -derivedDataPath .build-xcode \
+            -parallel-testing-enabled NO -resultBundlePath test-results.xcresult CODE_SIGNING_ALLOWED=NO
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-test-results
+          path: test-results.xcresult
+          if-no-files-found: warn
 
   mutation-testing:
     name: Mutation testing
@@ -51,62 +63,53 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: ./.github/actions/prepare-xcode
+      - name: Select mutation source files
+        id: sources
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          BASE_OVERRIDE: ${{ inputs.base_sha }}
+          SCOPE: ${{ inputs.mutation_scope || 'diff' }}
+        run: |
+          python3 Scripts/mutation-sources.py --scope "$SCOPE" --base "${BASE_OVERRIDE:-$BEFORE_SHA}" \
+            --head "$GITHUB_SHA" --output mutation-reports/changed-source-files.txt --github-output
       - name: Install swift-mutation-testing
+        if: steps.sources.outputs.has_sources == 'true'
         run: |
           set -euo pipefail
           brew tap ericodx/homebrew-tools
           brew install swift-mutation-testing
-          echo "Mutation tool: $(command -v swift-mutation-testing)"
-      - name: Run mutation analysis on changed Swift files
-        if: github.event_name != 'workflow_dispatch' || inputs.mutation_scope != 'full'
+          swift-mutation-testing --version
+      - name: Run mutation testing through Xcode
+        if: steps.sources.outputs.has_sources == 'true'
         env:
-          BEFORE_SHA: ${{ github.event.before }}
+          SCOPE: ${{ inputs.mutation_scope || 'diff' }}
+          NO_CACHE: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutation_cache }}
         run: |
           set -euo pipefail
-          mkdir -p mutation-reports
-          base_sha="$BEFORE_SHA"
-          if [[ -z "$base_sha" || "$base_sha" =~ ^0+$ ]]; then
-            base_sha="$(git rev-parse HEAD^)"
+          args=(. --project MutationTest.xcodeproj --scheme MutationTest --target MutationTestAppTests
+            --destination "$IOS_DESTINATION" --operator-tier experimental --concurrency 2
+            --timeout 120 --build-timeout 600 --xcodebuild-arg CODE_SIGNING_ALLOWED=NO)
+          [[ "$NO_CACHE" == "true" ]] && args+=(--no-cache)
+          if [[ "$SCOPE" == "full" ]]; then
+            swift-mutation-testing "${args[@]}" --sources-path . \
+              --exclude '**/Tests/**' --exclude AppTests/ --exclude '**/Package.swift' \
+              --output mutation-reports/full.json --markdown-output mutation-reports/full.md
+          else
+            while IFS= read -r source_file; do
+              report_id="$(printf '%s' "$source_file" | shasum -a 256 | cut -c1-12)"
+              echo "Mutating $source_file; running the full iOS test target."
+              swift-mutation-testing "${args[@]}" --sources-path "$source_file" \
+                --output "mutation-reports/$report_id.json" --markdown-output "mutation-reports/$report_id.md"
+            done < mutation-reports/changed-source-files.txt
           fi
-
-          git diff --name-only --diff-filter=ACMRT "$base_sha" "$GITHUB_SHA" -- Sources/CheckoutDomain \
-            | awk '/\.swift$/' > mutation-reports/changed-source-files.txt
-
-          if [[ ! -s mutation-reports/changed-source-files.txt ]]; then
-            echo "No changed domain Swift files; mutation analysis skipped." | tee -a "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-
-          while IFS= read -r source_file; do
-            report_id="$(printf '%s' "$source_file" | shasum -a 256 | cut -c1-12)"
-            echo "Running mutation analysis for $source_file"
-            swift-mutation-testing . \
-              --sources-path "$source_file" \
-              --output "mutation-reports/$report_id.json" \
-              --markdown-output "mutation-reports/$report_id.md"
-          done < mutation-reports/changed-source-files.txt
-
-      - name: Run full mutation analysis
-        if: github.event_name == 'workflow_dispatch' && inputs.mutation_scope == 'full'
-        run: |
-          set -euo pipefail
-          mkdir -p mutation-reports
-          swift-mutation-testing . \
-            --sources-path Sources/CheckoutDomain \
-            --output mutation-reports/full.json \
-            --markdown-output mutation-reports/full.md
-
       - name: Export mutation summaries
         if: always()
         run: |
-          set -euo pipefail
-          if compgen -G "mutation-reports/*.md" > /dev/null; then
-            for report in mutation-reports/*.md; do
-              cat "$report" | tee -a "$GITHUB_STEP_SUMMARY"
-            done
-          else
-            echo "Mutation summary was not produced." | tee -a "$GITHUB_STEP_SUMMARY"
-          fi
+          shopt -s nullglob
+          reports=(mutation-reports/*.md)
+          if [[ ${#reports[@]} == 0 ]]; then echo "No mutation report produced." >> "$GITHUB_STEP_SUMMARY"; fi
+          for report in "${reports[@]}"; do cat "$report" >> "$GITHUB_STEP_SUMMARY"; done
       - name: Upload mutation reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -115,92 +118,55 @@ jobs:
           path: mutation-reports/
           if-no-files-found: warn
 
-  mutation-testing-using-mutest-swift:
-    name: Mutation testing with mutest-swift
-    needs: test
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'workflow_dispatch'
-    runs-on: [self-hosted, macos]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Select Xcode toolchain
-        run: |
-          set -euo pipefail
-          echo "Developer directory: $(xcode-select -p)"
-          xcodebuild -version
-          echo "Swift version:"
-          swift --version
-          toolchain_fingerprint="$( { xcode-select -p; xcodebuild -version; swift --version; } | shasum -a 256 | awk '{print $1}')"
-          echo "MUTEST_TOOLCHAIN_FINGERPRINT=$toolchain_fingerprint" >> "$GITHUB_ENV"
-      - name: Find changed domain Swift files
-        id: changed_sources
-        if: github.event_name != 'workflow_dispatch' || inputs.mutation_scope != 'full'
-        env:
-          BEFORE_SHA: ${{ github.event.before }}
-          BASE_SHA_OVERRIDE: ${{ inputs.mutest_base_sha }}
-        run: |
-          set -euo pipefail
-          base_sha="$BASE_SHA_OVERRIDE"
-          if [[ -z "$base_sha" ]]; then base_sha="$BEFORE_SHA"; fi
-          if [[ -z "$base_sha" || "$base_sha" =~ ^0+$ ]]; then
-            base_sha="$(git rev-parse HEAD^)"
-          fi
-
-          git diff --name-only --diff-filter=ACMRT "$base_sha" "$GITHUB_SHA" -- Sources/CheckoutDomain \
-            | awk '/\.swift$/' > "$RUNNER_TEMP/mutest-swift-changed-sources.txt"
-
-          if [[ ! -s "$RUNNER_TEMP/mutest-swift-changed-sources.txt" ]]; then
-            echo "No changed domain Swift files; mutest-swift analysis skipped." | tee -a "$GITHUB_STEP_SUMMARY"
-            echo "has_sources=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          echo "Changed source files for mutest-swift:"
-          cat "$RUNNER_TEMP/mutest-swift-changed-sources.txt"
-          {
-            echo 'source_files<<MUTEST_SOURCES_EOF'
-            cat "$RUNNER_TEMP/mutest-swift-changed-sources.txt"
-            echo 'MUTEST_SOURCES_EOF'
-            echo 'has_sources=true'
-          } >> "$GITHUB_OUTPUT"
-      - name: Restore mutest-swift verdict cache
-        if: (github.event_name != 'workflow_dispatch' || inputs.mutest_cache) && (steps.changed_sources.outputs.has_sources == 'true' || (github.event_name == 'workflow_dispatch' && inputs.mutation_scope == 'full'))
-        uses: actions/cache@v4
-        with:
-          path: .mutest-swift-cache
-          key: mutest-swift-v3-${{ runner.os }}-${{ github.ref_name }}-${{ github.sha }}
-          restore-keys: |
-            mutest-swift-v3-${{ runner.os }}-${{ github.ref_name }}-
-            mutest-swift-v3-${{ runner.os }}-
-      - name: Run mutest-swift on changed sources and the full test target
-        if: steps.changed_sources.outputs.has_sources == 'true'
-        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@3ac11c3d3c51012ebc74c9011a009160146a7d76
-        with:
-          project-path: .
-          project-kind: swift-package
-          source: ${{ steps.changed_sources.outputs.source_files }}
-          operator-tier: experimental
-          parallelism: "2"
-          cache-path: .mutest-swift-cache
-          no-cache: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutest_cache }}
-          no-resume: ${{ github.event_name == 'workflow_dispatch' }}
-          maximum-integrity-warnings: "0"
-          output-path: mutest-swift-reports
-      - name: Run full-source mutest-swift analysis
-        if: github.event_name == 'workflow_dispatch' && inputs.mutation_scope == 'full'
-        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@3ac11c3d3c51012ebc74c9011a009160146a7d76
-        with:
-          project-path: .
-          project-kind: swift-package
-          operator-tier: experimental
-          parallelism: "2"
-          cache-path: .mutest-swift-cache
-          no-cache: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutest_cache }}
-          no-resume: ${{ github.event_name == 'workflow_dispatch' }}
-          maximum-integrity-warnings: "0"
-          output-path: mutest-swift-reports
-
+  # Temporarily disabled while validating the Xcode project migration.
+#   mutation-testing-using-mutest-swift:
+#     name: Mutation testing with mutest-swift
+#     needs: test
+#     if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'workflow_dispatch'
+#     runs-on: [self-hosted, macos]
+#     steps:
+#       - uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0
+#       - uses: ./.github/actions/prepare-xcode
+#       - name: Select mutation source files
+#         id: sources
+#         env:
+#           BEFORE_SHA: ${{ github.event.before }}
+#           BASE_OVERRIDE: ${{ inputs.base_sha }}
+#           SCOPE: ${{ inputs.mutation_scope || 'diff' }}
+#         run: |
+#           python3 Scripts/mutation-sources.py --scope "$SCOPE" --base "${BASE_OVERRIDE:-$BEFORE_SHA}" \
+#             --head "$GITHUB_SHA" --output "$RUNNER_TEMP/mutest-sources.txt" --github-output
+#       - name: Restore mutest-swift cache
+#         if: steps.sources.outputs.has_sources == 'true' && (github.event_name != 'workflow_dispatch' || inputs.mutation_cache)
+#         uses: actions/cache@v4
+#         with:
+#           path: .mutest-swift-cache
+#           key: mutest-xcode-v1-${{ runner.os }}-${{ github.ref_name }}-${{ github.sha }}
+#           restore-keys: |
+#             mutest-xcode-v1-${{ runner.os }}-${{ github.ref_name }}-
+#       - name: Run mutest-swift through Xcode with all tests
+#         if: steps.sources.outputs.has_sources == 'true'
+#         uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@3ac11c3d3c51012ebc74c9011a009160146a7d76
+#         with:
+#           project-path: MutationTest.xcodeproj
+#           project-kind: xcode-project
+#           scheme: MutationTest
+#           test-target: MutationTestAppTests
+#           destination: ${{ env.IOS_DESTINATION }}
+#           source: ${{ steps.sources.outputs.source_files }}
+#           operator-tier: experimental
+#           parallelism: "2"
+#           build-timeout: "600"
+#           baseline-timeout: "300"
+#           mutant-timeout: "120"
+#           cache-path: .mutest-swift-cache
+#           no-cache: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutation_cache }}
+#           no-resume: ${{ github.event_name == 'workflow_dispatch' }}
+#           maximum-integrity-warnings: "0"
+#           output-path: mutest-swift-reports
+#
   deploy:
     name: Release validation
     needs: [test, mutation-testing]
@@ -208,8 +174,9 @@ jobs:
     runs-on: [self-hosted, macos]
     steps:
       - uses: actions/checkout@v4
-      - name: Validate release build
+      - uses: ./.github/actions/prepare-xcode
+      - name: Validate iOS release build
         run: |
           set -euo pipefail
-          swift build -c release
-          echo "Release build validated; no deployment destination is configured."
+          xcodebuild build -project MutationTest.xcodeproj -scheme MutationTest -configuration Release \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath .build-xcode CODE_SIGNING_ALLOWED=NO
