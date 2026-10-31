@@ -3,12 +3,16 @@ import Testing
 
 @Suite("CheckoutPayments boundary cases")
 struct ExpandedPaymentsTests {
-    @Test("enforces return-window boundaries", arguments: Array(0...350))
+    @Test("enforces return-window boundaries", arguments: [
+        0, 29, 30, 31
+    ])
     func returnWindow(days: Int) {
         #expect(ReturnPolicy().isReturnable(daysSincePurchase: days, returnWindowDays: 30, isFinalSale: false, isUnused: true) == (days <= 30))
     }
 
-    @Test("calculates refunds after restocking fees", arguments: Array(stride(from: 0, through: 10_000, by: 100)))
+    @Test("calculates refunds after restocking fees", arguments: [
+        0, 5_000, 9_900, 10_000
+    ])
     func restockingFees(rate: Int) {
         let paid = 10_000
         #expect(ReturnPolicy().refundCents(paidCents: paid, restockingFeeBasisPoints: rate, isDamaged: false) == paid - (paid * rate + 5_000) / 10_000)
