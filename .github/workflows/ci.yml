@@ -39,13 +39,15 @@ jobs:
         run: |
           set -euo pipefail
           xcodebuild build-for-testing -project MutationTest.xcodeproj -scheme MutationTest \
-            -destination "$IOS_DESTINATION" -derivedDataPath .build-xcode CODE_SIGNING_ALLOWED=NO
+            -destination "$IOS_DESTINATION" -derivedDataPath .build-xcode \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO
       - name: Run all tests on iOS Simulator
         run: |
           set -euo pipefail
           xcodebuild test-without-building -project MutationTest.xcodeproj -scheme MutationTest \
             -destination "$IOS_DESTINATION" -derivedDataPath .build-xcode \
-            -parallel-testing-enabled NO -resultBundlePath test-results.xcresult CODE_SIGNING_ALLOWED=NO
+            -parallel-testing-enabled NO -resultBundlePath test-results.xcresult \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -89,7 +91,9 @@ jobs:
           set -euo pipefail
           args=(. --project MutationTest.xcodeproj --scheme MutationTest --target MutationTestAppTests
             --destination "$IOS_DESTINATION" --operator-tier experimental --concurrency 2
-            --timeout 120 --build-timeout 600 --xcodebuild-arg CODE_SIGNING_ALLOWED=NO)
+            --timeout 120 --build-timeout 600
+            --xcodebuild-arg ARCHS=arm64 --xcodebuild-arg ONLY_ACTIVE_ARCH=YES
+            --xcodebuild-arg CODE_SIGNING_ALLOWED=NO)
           [[ "$NO_CACHE" == "true" ]] && args+=(--no-cache)
           if [[ "$SCOPE" == "full" ]]; then
             swift-mutation-testing "${args[@]}" --sources-path . \
@@ -179,4 +183,5 @@ jobs:
         run: |
           set -euo pipefail
           xcodebuild build -project MutationTest.xcodeproj -scheme MutationTest -configuration Release \
-            -destination 'generic/platform=iOS Simulator' -derivedDataPath .build-xcode CODE_SIGNING_ALLOWED=NO
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath .build-xcode \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO
