@@ -181,7 +181,7 @@ jobs:
           project-kind: swift-package
           source: ${{ steps.changed_sources.outputs.source_files }}
           operator-tier: experimental
-          parallelism: "8"
+          parallelism: "2"
           cache-path: .mutest-swift-cache
           no-cache: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutest_cache }}
           maximum-integrity-warnings: "0"
@@ -193,7 +193,7 @@ jobs:
           project-path: .
           project-kind: swift-package
           operator-tier: experimental
-          parallelism: "8"
+          parallelism: "2"
           cache-path: .mutest-swift-cache
           no-cache: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutest_cache }}
           maximum-integrity-warnings: "0"
