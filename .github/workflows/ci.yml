@@ -122,55 +122,60 @@ jobs:
           path: mutation-reports/
           if-no-files-found: warn
 
-  # Temporarily disabled while validating the Xcode project migration.
-#   mutation-testing-using-mutest-swift:
-#     name: Mutation testing with mutest-swift
-#     needs: test
-#     if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'workflow_dispatch'
-#     runs-on: [self-hosted, macos]
-#     steps:
-#       - uses: actions/checkout@v4
-#         with:
-#           fetch-depth: 0
-#       - uses: ./.github/actions/prepare-xcode
-#       - name: Select mutation source files
-#         id: sources
-#         env:
-#           BEFORE_SHA: ${{ github.event.before }}
-#           BASE_OVERRIDE: ${{ inputs.base_sha }}
-#           SCOPE: ${{ inputs.mutation_scope || 'diff' }}
-#         run: |
-#           python3 Scripts/mutation-sources.py --scope "$SCOPE" --base "${BASE_OVERRIDE:-$BEFORE_SHA}" \
-#             --head "$GITHUB_SHA" --output "$RUNNER_TEMP/mutest-sources.txt" --github-output
-#       - name: Restore mutest-swift cache
-#         if: steps.sources.outputs.has_sources == 'true' && (github.event_name != 'workflow_dispatch' || inputs.mutation_cache)
-#         uses: actions/cache@v4
-#         with:
-#           path: .mutest-swift-cache
-#           key: mutest-xcode-v1-${{ runner.os }}-${{ github.ref_name }}-${{ github.sha }}
-#           restore-keys: |
-#             mutest-xcode-v1-${{ runner.os }}-${{ github.ref_name }}-
-#       - name: Run mutest-swift through Xcode with all tests
-#         if: steps.sources.outputs.has_sources == 'true'
-#         uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@3ac11c3d3c51012ebc74c9011a009160146a7d76
-#         with:
-#           project-path: MutationTest.xcodeproj
-#           project-kind: xcode-project
-#           scheme: MutationTest
-#           test-target: MutationTestAppTests
-#           destination: ${{ env.IOS_DESTINATION }}
-#           source: ${{ steps.sources.outputs.source_files }}
-#           operator-tier: experimental
-#           parallelism: "2"
-#           build-timeout: "600"
-#           baseline-timeout: "300"
-#           mutant-timeout: "120"
-#           cache-path: .mutest-swift-cache
-#           no-cache: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutation_cache }}
-#           no-resume: ${{ github.event_name == 'workflow_dispatch' }}
-#           maximum-integrity-warnings: "0"
-#           output-path: mutest-swift-reports
-#
+  # Run after the other mutation job so both timing measurements are not competing for runner resources.
+  mutation-testing-using-mutest-swift:
+    name: Mutation testing with mutest-swift
+    needs: [test, mutation-testing]
+    if: >-
+      always() && needs.test.result == 'success' &&
+      ((github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'workflow_dispatch')
+    runs-on: [self-hosted, macos]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/prepare-xcode
+      - name: Select mutation source files
+        id: sources
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          BASE_OVERRIDE: ${{ inputs.base_sha }}
+          SCOPE: ${{ inputs.mutation_scope || 'diff' }}
+        run: |
+          python3 Scripts/mutation-sources.py --scope "$SCOPE" --base "${BASE_OVERRIDE:-$BEFORE_SHA}" \
+            --head "$GITHUB_SHA" --output "$RUNNER_TEMP/mutest-sources.txt" --github-output
+      - name: Restore mutest-swift cache
+        if: steps.sources.outputs.has_sources == 'true' && (github.event_name != 'workflow_dispatch' || inputs.mutation_cache)
+        uses: actions/cache@v4
+        with:
+          path: .mutest-swift-cache
+          key: mutest-xcode-v1-${{ runner.os }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            mutest-xcode-v1-${{ runner.os }}-${{ github.ref_name }}-
+      - name: Run mutest-swift through Xcode with all tests
+        if: steps.sources.outputs.has_sources == 'true'
+        env:
+          ARCHS: arm64
+          ONLY_ACTIVE_ARCH: YES
+        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@3ac11c3d3c51012ebc74c9011a009160146a7d76
+        with:
+          project-path: MutationTest.xcodeproj
+          project-kind: xcode-project
+          scheme: MutationTest
+          test-target: MutationTestAppTests
+          destination: ${{ env.IOS_DESTINATION }}
+          source: ${{ steps.sources.outputs.source_files }}
+          operator-tier: experimental
+          parallelism: "2"
+          build-timeout: "600"
+          baseline-timeout: "300"
+          mutant-timeout: "120"
+          cache-path: .mutest-swift-cache
+          no-cache: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutation_cache }}
+          no-resume: ${{ github.event_name == 'workflow_dispatch' }}
+          maximum-integrity-warnings: "0"
+          output-path: mutest-swift-reports
+
   deploy:
     name: Release validation
     needs: [test, mutation-testing]
