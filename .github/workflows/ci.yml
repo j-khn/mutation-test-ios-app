@@ -133,15 +133,6 @@ jobs:
           swift --version
           toolchain_fingerprint="$( { xcode-select -p; xcodebuild -version; swift --version; } | shasum -a 256 | awk '{print $1}')"
           echo "MUTEST_TOOLCHAIN_FINGERPRINT=$toolchain_fingerprint" >> "$GITHUB_ENV"
-      - name: Restore mutest-swift verdict cache
-        if: github.event_name != 'workflow_dispatch' || inputs.mutest_cache
-        uses: actions/cache@v4
-        with:
-          path: .mutest-swift-cache
-          key: mutest-swift-v2-${{ runner.os }}-${{ github.ref_name }}-${{ github.sha }}
-          restore-keys: |
-            mutest-swift-v2-${{ runner.os }}-${{ github.ref_name }}-
-            mutest-swift-v2-${{ runner.os }}-
       - name: Find changed domain Swift files
         id: changed_sources
         if: github.event_name != 'workflow_dispatch' || inputs.mutation_scope != 'full'
@@ -173,6 +164,15 @@ jobs:
             echo 'MUTEST_SOURCES_EOF'
             echo 'has_sources=true'
           } >> "$GITHUB_OUTPUT"
+      - name: Restore mutest-swift verdict cache
+        if: (github.event_name != 'workflow_dispatch' || inputs.mutest_cache) && (steps.changed_sources.outputs.has_sources == 'true' || (github.event_name == 'workflow_dispatch' && inputs.mutation_scope == 'full'))
+        uses: actions/cache@v4
+        with:
+          path: .mutest-swift-cache
+          key: mutest-swift-v3-${{ runner.os }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            mutest-swift-v3-${{ runner.os }}-${{ github.ref_name }}-
+            mutest-swift-v3-${{ runner.os }}-
       - name: Run mutest-swift on changed sources and the full test target
         if: steps.changed_sources.outputs.has_sources == 'true'
         uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@3ac11c3d3c51012ebc74c9011a009160146a7d76
