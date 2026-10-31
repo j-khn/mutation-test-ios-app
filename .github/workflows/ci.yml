@@ -12,6 +12,14 @@ on:
         type: choice
         options: [diff, full]
         default: diff
+      mutest_cache:
+        description: Reuse previous mutest-swift verdicts (disable for a clean speed benchmark)
+        type: boolean
+        default: true
+      mutest_base_sha:
+        description: Optional base commit for the mutest-swift changed-source run
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -123,14 +131,27 @@ jobs:
           xcodebuild -version
           echo "Swift version:"
           swift --version
+          toolchain_fingerprint="$( { xcode-select -p; xcodebuild -version; swift --version; } | shasum -a 256 | awk '{print $1}')"
+          echo "MUTEST_TOOLCHAIN_FINGERPRINT=$toolchain_fingerprint" >> "$GITHUB_ENV"
+      - name: Restore mutest-swift verdict cache
+        if: github.event_name != 'workflow_dispatch' || inputs.mutest_cache
+        uses: actions/cache@v4
+        with:
+          path: .mutest-swift-cache
+          key: mutest-swift-v2-${{ runner.os }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            mutest-swift-v2-${{ runner.os }}-${{ github.ref_name }}-
+            mutest-swift-v2-${{ runner.os }}-
       - name: Find changed domain Swift files
         id: changed_sources
         if: github.event_name != 'workflow_dispatch' || inputs.mutation_scope != 'full'
         env:
           BEFORE_SHA: ${{ github.event.before }}
+          BASE_SHA_OVERRIDE: ${{ inputs.mutest_base_sha }}
         run: |
           set -euo pipefail
-          base_sha="$BEFORE_SHA"
+          base_sha="$BASE_SHA_OVERRIDE"
+          if [[ -z "$base_sha" ]]; then base_sha="$BEFORE_SHA"; fi
           if [[ -z "$base_sha" || "$base_sha" =~ ^0+$ ]]; then
             base_sha="$(git rev-parse HEAD^)"
           fi
@@ -154,23 +175,27 @@ jobs:
           } >> "$GITHUB_OUTPUT"
       - name: Run mutest-swift on changed sources and the full test target
         if: steps.changed_sources.outputs.has_sources == 'true'
-        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@3dfc40ab1c8ac12fae00ccd892ed1eccac8b4b94
+        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@61685715a5cb4e1cbbf89d0fe7162eb018d90f16
         with:
           project-path: .
           project-kind: swift-package
           source: ${{ steps.changed_sources.outputs.source_files }}
           operator-tier: experimental
           parallelism: "2"
+          cache-path: .mutest-swift-cache
+          no-cache: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutest_cache }}
           maximum-integrity-warnings: "0"
           output-path: mutest-swift-reports
       - name: Run full-source mutest-swift analysis
         if: github.event_name == 'workflow_dispatch' && inputs.mutation_scope == 'full'
-        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@3dfc40ab1c8ac12fae00ccd892ed1eccac8b4b94
+        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@61685715a5cb4e1cbbf89d0fe7162eb018d90f16
         with:
           project-path: .
           project-kind: swift-package
           operator-tier: experimental
           parallelism: "2"
+          cache-path: .mutest-swift-cache
+          no-cache: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutest_cache }}
           maximum-integrity-warnings: "0"
           output-path: mutest-swift-reports
 
