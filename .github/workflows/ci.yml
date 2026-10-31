@@ -169,7 +169,7 @@ jobs:
           mutant-timeout: "120"
           cache-path: .mutest-swift-cache
           no-cache: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutation_cache }}
-          no-resume: ${{ github.event_name == 'workflow_dispatch' }}
+          no-resume: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutation_cache }}
           maximum-integrity-warnings: "0"
           output-path: mutest-swift-reports
           xcodebuild-arg: |
