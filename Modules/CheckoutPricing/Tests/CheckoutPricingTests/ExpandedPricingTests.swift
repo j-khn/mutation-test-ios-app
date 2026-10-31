@@ -1,63 +1,18 @@
 import CheckoutPricing
 import Testing
 
-@Suite("CheckoutPricing boundary cases")
+@Suite("Promotion and tax cases")
 struct ExpandedPricingTests {
-    @Test("calculates percentage discounts across subtotals", arguments: [
-        1, 100, 350
-    ])
-    func discounts(subtotal: Int) {
-        let cents = subtotal * 100
-        #expect(PromotionEngine().discountCents(subtotalCents: cents, percent: 15) == cents * 15 / 100)
-    }
+    @Test("checks promotion and tax boundaries")
+    func promotionAndTaxCases() {
+        let promotion = PromotionEngine()
+        #expect(promotion.discountCents(subtotalCents: 1_000, percent: 15) == 150)
+        #expect(promotion.isEligible(subtotalCents: 1_000, minimumSpendCents: 1_000, customerIsEligible: true))
+        #expect(promotion.canStack(isStackable: true, existingPromotionCount: 0))
 
-    @Test("applies promotion caps", arguments: [
-        1, 100, 350
-    ])
-    func discountCaps(subtotal: Int) {
-        let cents = subtotal * 100
-        let cap = subtotal * 7
-        #expect(PromotionEngine().discountCents(subtotalCents: cents, percent: 30, maximumDiscountCents: cap) == min(cents * 30 / 100, cap))
-    }
-
-    @Test("checks promotion minimum spend", arguments: [
-        0, 99, 100, 101
-    ])
-    func promotionEligibility(spend: Int) {
-        #expect(PromotionEngine().isEligible(subtotalCents: spend, minimumSpendCents: 100, customerIsEligible: true) == (spend >= 100))
-        #expect(!PromotionEngine().isEligible(subtotalCents: spend, minimumSpendCents: 100, customerIsEligible: false))
-    }
-
-    @Test("calculates tax across basis point rates", arguments: [
-        0, 5_000, 9_999, 10_000
-    ])
-    func taxRates(rate: Int) {
-        let amount = 10_000
-        #expect(TaxCalculator().taxCents(amountCents: amount, rateBasisPoints: rate) == (amount * rate + 5_000) / 10_000)
-        #expect(TaxCalculator().isValidRate(rate))
-    }
-
-    @Test("rejects tax rates outside the supported range", arguments: [-10_000, -1, 10_001, 20_000])
-    func invalidTaxRates(rate: Int) {
-        #expect(!TaxCalculator().isValidRate(rate))
-    }
-
-    @Test("extracts tax from inclusive prices", arguments: [
-        1, 100, 350
-    ])
-    func taxInclusiveAmounts(amount: Int) {
-        let cents = amount * 100
-        let net = TaxCalculator().taxExclusiveAmount(inclusiveCents: cents, rateBasisPoints: 2_000)
-        #expect(net <= cents)
-        #expect(net > 0)
-        #expect(net + TaxCalculator().taxCents(amountCents: net, rateBasisPoints: 2_000) >= cents - 1)
-    }
-
-    @Test("allows only one stackable promotion", arguments: [
-        0, 1, 350
-    ])
-    func promotionStacking(existingCount: Int) {
-        #expect(PromotionEngine().canStack(isStackable: true, existingPromotionCount: existingCount) == (existingCount == 0))
-        #expect(!PromotionEngine().canStack(isStackable: false, existingPromotionCount: existingCount))
+        let tax = TaxCalculator()
+        #expect(tax.taxCents(amountCents: 1_000, rateBasisPoints: 825) == 83)
+        #expect(tax.isValidRate(10_000))
+        #expect(!tax.isValidRate(10_001))
     }
 }

@@ -1,5 +1,4 @@
 public struct BillingRateLogic: Sendable {
-    public static let policyThresholdCents = 950
     public init() {}
     public func taxCents(amountCents: Int, rateBasisPoints: Int) -> Int {
         let taxableCents = max(0, amountCents)
@@ -14,5 +13,4 @@ public struct BillingRateLogic: Sendable {
         return grossAtBasisPointScale / grossRate
     }
     public func validRate(rateBasisPoints: Int) -> Bool { (0...10_000).contains(rateBasisPoints) }
-    public func exceedsPolicyThreshold(amountCents: Int) -> Bool { amountCents > Self.policyThresholdCents }
 }

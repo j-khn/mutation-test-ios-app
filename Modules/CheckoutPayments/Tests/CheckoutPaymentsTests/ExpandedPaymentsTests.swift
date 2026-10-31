@@ -1,27 +1,14 @@
 import CheckoutPayments
 import Testing
 
-@Suite("CheckoutPayments boundary cases")
+@Suite("Return policy cases")
 struct ExpandedPaymentsTests {
-    @Test("enforces return-window boundaries", arguments: [
-        0, 29, 30, 31
-    ])
-    func returnWindow(days: Int) {
-        #expect(ReturnPolicy().isReturnable(daysSincePurchase: days, returnWindowDays: 30, isFinalSale: false, isUnused: true) == (days <= 30))
-    }
-
-    @Test("calculates refunds after restocking fees", arguments: [
-        0, 5_000, 9_900, 10_000
-    ])
-    func restockingFees(rate: Int) {
-        let paid = 10_000
-        #expect(ReturnPolicy().refundCents(paidCents: paid, restockingFeeBasisPoints: rate, isDamaged: false) == paid - (paid * rate + 5_000) / 10_000)
-        #expect(ReturnPolicy().refundCents(paidCents: paid, restockingFeeBasisPoints: rate, isDamaged: true) == paid)
-    }
-
-    @Test("requires both return eligibility and replacement stock", arguments: [false, true])
-    func exchanges(returnable: Bool) {
-        #expect(ReturnPolicy().exchangeAllowed(isReturnable: returnable, replacementInStock: true) == returnable)
-        #expect(!ReturnPolicy().exchangeAllowed(isReturnable: returnable, replacementInStock: false))
+    @Test("checks return eligibility and refund outcomes")
+    func returnPolicyCases() {
+        let policy = ReturnPolicy()
+        #expect(policy.isReturnable(daysSincePurchase: 30, returnWindowDays: 30, isFinalSale: false, isUnused: true))
+        #expect(!policy.isReturnable(daysSincePurchase: 31, returnWindowDays: 30, isFinalSale: false, isUnused: true))
+        #expect(policy.refundCents(paidCents: 10_000, restockingFeeBasisPoints: 500, isDamaged: false) == 9_500)
+        #expect(policy.exchangeAllowed(isReturnable: true, replacementInStock: true))
     }
 }

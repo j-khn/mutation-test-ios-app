@@ -1,5 +1,4 @@
 public struct MembershipThresholdLogic: Sendable {
-    public static let policyThresholdCents = 3250
     public init() {}
     public func amountCents(unitCents: Int, quantity: Int) -> Int { max(0, unitCents) * max(0, quantity) }
     public func feeCents(amountCents: Int, rateBasisPoints: Int) -> Int {
@@ -11,5 +10,4 @@ public struct MembershipThresholdLogic: Sendable {
         let nonnegativeFee = max(0, feeCents)
         return max(0, amountCents - nonnegativeFee)
     }
-    public func exceedsPolicyThreshold(amountCents: Int) -> Bool { amountCents > Self.policyThresholdCents }
 }
