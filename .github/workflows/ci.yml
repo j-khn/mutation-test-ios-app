@@ -175,7 +175,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
       - name: Run mutest-swift on changed sources and the full test target
         if: steps.changed_sources.outputs.has_sources == 'true'
-        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@d7c55ec62581071f08af378ee8a9b884a301d9c5
+        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@3ac11c3d3c51012ebc74c9011a009160146a7d76
         with:
           project-path: .
           project-kind: swift-package
@@ -184,11 +184,12 @@ jobs:
           parallelism: "2"
           cache-path: .mutest-swift-cache
           no-cache: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutest_cache }}
+          no-resume: ${{ github.event_name == 'workflow_dispatch' }}
           maximum-integrity-warnings: "0"
           output-path: mutest-swift-reports
       - name: Run full-source mutest-swift analysis
         if: github.event_name == 'workflow_dispatch' && inputs.mutation_scope == 'full'
-        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@d7c55ec62581071f08af378ee8a9b884a301d9c5
+        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@3ac11c3d3c51012ebc74c9011a009160146a7d76
         with:
           project-path: .
           project-kind: swift-package
@@ -196,6 +197,7 @@ jobs:
           parallelism: "2"
           cache-path: .mutest-swift-cache
           no-cache: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutest_cache }}
+          no-resume: ${{ github.event_name == 'workflow_dispatch' }}
           maximum-integrity-warnings: "0"
           output-path: mutest-swift-reports
 
