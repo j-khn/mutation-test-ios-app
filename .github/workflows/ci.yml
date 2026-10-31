@@ -154,7 +154,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
       - name: Run mutest-swift on changed sources and the full test target
         if: steps.changed_sources.outputs.has_sources == 'true'
-        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@40c9afa913d3a38f070103b428dd629699fb4c0f
+        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@3dfc40ab1c8ac12fae00ccd892ed1eccac8b4b94
         with:
           project-path: .
           project-kind: swift-package
@@ -165,7 +165,7 @@ jobs:
           output-path: mutest-swift-reports
       - name: Run full-source mutest-swift analysis
         if: github.event_name == 'workflow_dispatch' && inputs.mutation_scope == 'full'
-        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@40c9afa913d3a38f070103b428dd629699fb4c0f
+        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@3dfc40ab1c8ac12fae00ccd892ed1eccac8b4b94
         with:
           project-path: .
           project-kind: swift-package
