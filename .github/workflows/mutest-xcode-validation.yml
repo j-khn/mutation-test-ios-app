@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/prepare-xcode
-      - uses: jamilkhan55/mutest-swift/.github/actions/validate-xcode-workers@7ede3be12710a835830c87729aa3aa41794fffc3
+      - uses: jamilkhan55/mutest-swift/.github/actions/validate-xcode-workers@139ab828cfaaa3aa7747b6aebbde0a93922d043f
         with:
           destination: ${{ env.IOS_DESTINATION }}
           repetitions: ${{ inputs.repetitions }}
