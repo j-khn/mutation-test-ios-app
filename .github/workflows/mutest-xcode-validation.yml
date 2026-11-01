@@ -1,0 +1,35 @@
+name: Validate mutest-swift Xcode workers
+
+on:
+  workflow_dispatch:
+    inputs:
+      repetitions:
+        description: Sequential benchmark runs for each worker count
+        type: choice
+        options: ["3", "1", "0"]
+        default: "3"
+      skip_fixtures:
+        description: Run only the app benchmark
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mutest-xcode-worker-validation
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Xcode worker acceptance and benchmarks
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/prepare-xcode
+      - uses: jamilkhan55/mutest-swift/.github/actions/validate-xcode-workers@e991df87782e4bfc9b5f747b9ed8991c219d17f2
+        with:
+          destination: ${{ env.IOS_DESTINATION }}
+          repetitions: ${{ inputs.repetitions }}
+          skip-fixtures: ${{ inputs.skip_fixtures }}
