@@ -4,7 +4,7 @@ public struct InventoryPolicy: Sendable {
     public func canFulfill(requested: Int, available: Int, isDiscontinued: Bool) -> Bool {
         guard !isDiscontinued else { return false }
         guard requested > 0 else { return false }
-        return available >= requested
+        return requested <= available
     }
 
     public func remainingStock(available: Int, reserved: Int) -> Int {

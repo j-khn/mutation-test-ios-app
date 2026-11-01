@@ -163,7 +163,7 @@ jobs:
           destination: ${{ env.IOS_DESTINATION }}
           source: ${{ steps.sources.outputs.source_files }}
           operator-tier: experimental
-          parallelism: "4"
+          parallelism: "2"
           build-timeout: "600"
           baseline-timeout: "300"
           mutant-timeout: "120"
