@@ -98,15 +98,22 @@ jobs:
           if [[ "$SCOPE" == "full" ]]; then
             swift-mutation-testing "${args[@]}" --sources-path . \
               --exclude '**/Tests/**' --exclude AppTests/ --exclude '**/Package.swift' \
+              --keep-logs "$RUNNER_TEMP/swift-mutation-test-logs/full" \
               --output mutation-reports/full.json --markdown-output mutation-reports/full.md
           else
             while IFS= read -r source_file; do
               report_id="$(printf '%s' "$source_file" | shasum -a 256 | cut -c1-12)"
               echo "Mutating $source_file; running the full iOS test target."
               swift-mutation-testing "${args[@]}" --sources-path "$source_file" \
+                --keep-logs "$RUNNER_TEMP/swift-mutation-test-logs/$report_id" \
                 --output "mutation-reports/$report_id.json" --markdown-output "mutation-reports/$report_id.md"
             done < mutation-reports/changed-source-files.txt
           fi
+      - name: Count test cases run by each mutant
+        if: always() && steps.sources.outputs.has_sources == 'true'
+        run: |
+          trap 'rm -rf -- "$RUNNER_TEMP/swift-mutation-test-logs"' EXIT
+          python3 Scripts/summarize-mutation-test-logs.py "$RUNNER_TEMP/swift-mutation-test-logs" | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Export mutation summaries
         if: always()
         run: |
