@@ -154,7 +154,7 @@ jobs:
             mutest-xcode-v1-${{ runner.os }}-${{ github.ref_name }}-
       - name: Run mutest-swift through Xcode with all tests
         if: steps.sources.outputs.has_sources == 'true'
-        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@f09a1639d7710d15ad64d7d7ed9560e886aea745
+        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@f4a2337fde93262816ef9ddf9a7b2ddde6e9a1dd
         with:
           project-path: MutationTest.xcodeproj
           project-kind: xcode-project
