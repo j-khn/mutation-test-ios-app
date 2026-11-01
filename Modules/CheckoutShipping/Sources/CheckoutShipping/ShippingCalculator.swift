@@ -4,7 +4,7 @@ public struct ShippingCalculator: Sendable {
     /// Applies the free-shipping threshold before calculating parcel surcharges.
     public func feeCents(subtotalCents: Int, weightGrams: Int) -> Int {
         guard subtotalCents < 5_000 else { return 0 }
-        let billableWeightGrams = weightGrams >= 1 ? weightGrams : 0
+        let billableWeightGrams = max(0, weightGrams)
         let baseFee = billableWeightGrams <= 1_000 ? 499 : 799
         let heavySurcharge = billableWeightGrams >= 5_001 ? 500 : 0
         return baseFee + heavySurcharge
