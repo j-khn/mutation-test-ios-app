@@ -12,6 +12,14 @@ on:
         description: Run only the app benchmark
         type: boolean
         default: false
+      extra_fixtures_only:
+        description: Run only isolated-build and schema-narrowing checks
+        type: boolean
+        default: false
+      test_tool:
+        description: Run the library unit and Swift package integration tests
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -28,8 +36,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/prepare-xcode
-      - uses: jamilkhan55/mutest-swift/.github/actions/validate-xcode-workers@81f22b68cedf3479c862c2dd6059a8f895fa3219
+      - uses: jamilkhan55/mutest-swift/.github/actions/validate-xcode-workers@d2b5d76e0222ab01be1e98510511aa26dc040064
         with:
           destination: ${{ env.IOS_DESTINATION }}
           repetitions: ${{ inputs.repetitions }}
           skip-fixtures: ${{ inputs.skip_fixtures }}
+          extra-fixtures-only: ${{ inputs.extra_fixtures_only }}
+          test-tool: ${{ inputs.test_tool }}
