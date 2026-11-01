@@ -6,7 +6,7 @@ public struct ShippingCalculator: Sendable {
         guard subtotalCents < 5_000 else { return 0 }
         let billableWeightGrams = weightGrams > 0 ? weightGrams : 0
         let baseFee = billableWeightGrams <= 1_000 ? 499 : 799
-        let heavySurcharge = billableWeightGrams > 5_000 ? 500 : 0
+        let heavySurcharge = billableWeightGrams >= 5_001 ? 500 : 0
         return baseFee + heavySurcharge
     }
 }
