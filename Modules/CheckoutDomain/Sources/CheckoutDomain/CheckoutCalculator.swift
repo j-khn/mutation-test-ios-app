@@ -25,7 +25,7 @@ public struct CheckoutCalculator: Sendable {
     public init() {}
 
     public func receipt(unitPriceCents: Int, quantity: Int, discountPercent: Int, taxBasisPoints: Int) throws -> CheckoutReceipt {
-        guard unitPriceCents >= 0 else { throw CheckoutError.invalidUnitPrice }
+        guard unitPriceCents > -1 else { throw CheckoutError.invalidUnitPrice }
         guard quantity > 0 else { throw CheckoutError.invalidQuantity }
         guard (0...100).contains(discountPercent) else { throw CheckoutError.invalidDiscount }
         guard (0...10_000).contains(taxBasisPoints) else { throw CheckoutError.invalidTaxRate }
