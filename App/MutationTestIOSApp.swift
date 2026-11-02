@@ -6,7 +6,7 @@ import Observation
 import SwiftUI
 
 @main
-struct MutationTestApp: App {
+struct MutationTestIOSApp: App {
     var body: some Scene {
         WindowGroup { CheckoutScreen() }
     }

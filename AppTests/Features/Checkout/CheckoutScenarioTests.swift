@@ -1,5 +1,5 @@
 import Testing
-@testable import MutationTestApp
+@testable import MutationTestIOSApp
 
 @MainActor
 @Suite("Checkout scenarios")

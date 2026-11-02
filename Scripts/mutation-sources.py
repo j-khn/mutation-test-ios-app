@@ -33,4 +33,4 @@ if args.github_output:
     with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
         stream.write(f"has_sources={'true' if selected else 'false'}\n")
         stream.write('source_files<<MUTATION_SOURCE_FILES\n' + args.output.read_text() + 'MUTATION_SOURCE_FILES\n')
-print(f'{args.scope}: {len(selected)} source files selected; tests remain the full MutationTestAppTests target.')
+print(f'{args.scope}: {len(selected)} source files selected; tests remain the full MutationTestIOSAppTests target.')

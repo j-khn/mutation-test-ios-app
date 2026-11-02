@@ -9,18 +9,18 @@
   "defaultOptions": {
     "codeCoverage": true,
     "targetForVariableExpansion": {
-      "containerPath": "container:MutationTest.xcodeproj",
+      "containerPath": "container:MutationTestIOSApp.xcodeproj",
       "identifier": "A172CEDCAE47474B615C54D5",
-      "name": "MutationTest"
+      "name": "MutationTestIOSApp"
     }
   },
   "testTargets": [
     {
       "parallelizable": false,
       "target": {
-        "containerPath": "container:MutationTest.xcodeproj",
+        "containerPath": "container:MutationTestIOSApp.xcodeproj",
         "identifier": "59830EBC3A4184110566BF1A",
-        "name": "MutationTestAppTests"
+        "name": "MutationTestIOSAppTests"
       }
     }
   ],

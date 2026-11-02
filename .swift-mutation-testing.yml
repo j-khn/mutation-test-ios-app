@@ -1,7 +1,7 @@
 # Xcode app mode. The root deliberately has no Package.swift.
-project: MutationTest.xcodeproj
-scheme: MutationTest
-test-target: MutationTestAppTests
+project: MutationTestIOSApp.xcodeproj
+scheme: MutationTestIOSApp
+test-target: MutationTestIOSAppTests
 testing-framework: swift-testing
 operator-tier: experimental
 timeout: 120
