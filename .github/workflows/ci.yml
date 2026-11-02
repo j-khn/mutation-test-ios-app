@@ -162,13 +162,13 @@ jobs:
       - name: Build mutest-swift CLI
         id: mutest-swift-cli
         if: steps.sources.outputs.has_sources == 'true'
-        uses: jamilkhan55/mutest-swift/.github/actions/build-cli@main
+        uses: j-khn/mutest-swift/.github/actions/build-cli@main
         with:
           cache-path: .mutest-swift-cache
           no-cache: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutation_cache }}
       - name: Run mutest-swift through Xcode with all tests
         if: steps.sources.outputs.has_sources == 'true'
-        uses: jamilkhan55/mutest-swift/.github/actions/run-mutation-testing@main
+        uses: j-khn/mutest-swift/.github/actions/run-mutation-testing@main
         with:
           tool-path: ${{ steps.mutest-swift-cli.outputs.tool-path }}
           project-path: MutationTest.xcodeproj
