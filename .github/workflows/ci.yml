@@ -5,6 +5,8 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  schedule:
+    - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
       mutation_scope:
@@ -20,6 +22,16 @@ on:
         description: Optional base commit for changed-source analysis
         type: string
         default: ""
+      source_scope:
+        description: Mutate changed source files or all source files in the selected package
+        type: choice
+        options: [changed, all]
+        default: changed
+      test_scope:
+        description: Run changed tests, matching tests, both, or the full test plan
+        type: choice
+        options: [changed-and-matching, changed, matching, all]
+        default: changed-and-matching
 
 permissions:
   contents: read
@@ -135,50 +147,52 @@ jobs:
     needs: [test, mutation-testing]
     if: >-
       always() && needs.test.result == 'success' &&
-      ((github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'workflow_dispatch')
+      ((github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
     runs-on: [self-hosted, macos]
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: ./.github/actions/prepare-xcode
-      - name: Select mutation source files
-        id: sources
+      - name: Choose the comparison base
+        id: commit-range
         env:
+          EVENT_NAME: ${{ github.event_name }}
           BEFORE_SHA: ${{ github.event.before }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           BASE_OVERRIDE: ${{ inputs.base_sha }}
-          SCOPE: ${{ inputs.mutation_scope || 'diff' }}
         run: |
-          python3 Scripts/mutation-sources.py --scope "$SCOPE" --base "${BASE_OVERRIDE:-$BEFORE_SHA}" \
-            --head "$GITHUB_SHA" --output "$RUNNER_TEMP/mutest-sources.txt" --github-output
+          set -euo pipefail
+          base="$BASE_OVERRIDE"
+          if [[ -z "$base" && "$EVENT_NAME" == "push" ]]; then base="$BEFORE_SHA"; fi
+          if [[ -z "$base" && "$EVENT_NAME" == "pull_request" ]]; then base="$PR_BASE_SHA"; fi
+          if [[ -z "$base" && "$EVENT_NAME" == "schedule" ]]; then
+            base="$(git rev-list --max-count=1 --before='24 hours ago' "$GITHUB_SHA" || true)"
+            if [[ -z "$base" ]]; then base="$(git hash-object -t tree /dev/null)"; fi
+          fi
+          echo "base=$base" >> "$GITHUB_OUTPUT"
       - name: Restore mutest-swift cache
-        if: steps.sources.outputs.has_sources == 'true' && (github.event_name != 'workflow_dispatch' || inputs.mutation_cache)
+        if: github.event_name != 'workflow_dispatch' || inputs.mutation_cache
         uses: actions/cache@v4
         with:
           path: .mutest-swift-cache
           key: mutest-xcode-v1-${{ runner.os }}-${{ github.ref_name }}-${{ github.sha }}
           restore-keys: |
             mutest-xcode-v1-${{ runner.os }}-${{ github.ref_name }}-
-      - name: Build mutest-swift CLI
-        id: mutest-swift-cli
-        if: steps.sources.outputs.has_sources == 'true'
-        uses: j-khn/mutest-swift/.github/actions/build-cli@main
-        with:
-          cache-path: .mutest-swift-cache
-          no-cache: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutation_cache }}
-      - name: Run mutest-swift through Xcode with all tests
-        if: steps.sources.outputs.has_sources == 'true'
+      - name: Run mutest-swift with commit-based scope
         uses: j-khn/mutest-swift/.github/actions/run-mutation-testing@main
         with:
-          tool-path: ${{ steps.mutest-swift-cli.outputs.tool-path }}
-          project-path: MutationTestIOSApp.xcodeproj
+          project: MutationTestIOSApp.xcodeproj
           project-kind: xcode-project
           scheme: MutationTestIOSApp
-          test-target: MutationTestIOSAppTests
-          destination: ${{ env.IOS_DESTINATION }}
-          source: ${{ steps.sources.outputs.source_files }}
+          destination-simulator: ${{ env.IOS_DESTINATION }}
+          source-commit: ${{ github.sha }}
+          source-base: ${{ steps.commit-range.outputs.base }}
+          source-scope: ${{ inputs.source_scope }}
+          test-scope: ${{ inputs.test_scope }}
+          test-file-suffix: Tests.swift
           operator-tier: experimental
-          parallelism: "2"
+          workers: "2"
           build-timeout: "600"
           baseline-timeout: "300"
           mutant-timeout: "120"
