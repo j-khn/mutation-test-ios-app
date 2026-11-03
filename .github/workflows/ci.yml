@@ -92,6 +92,7 @@ jobs:
         run: |
           set -euo pipefail
           brew tap ericodx/homebrew-tools
+          brew trust ericodx/tools
           brew install swift-mutation-testing
           swift-mutation-testing --version
       - name: Run mutation testing through Xcode
@@ -192,7 +193,7 @@ jobs:
           test-scope: ${{ inputs.test_scope }}
           test-file-suffix: Tests.swift
           operator-tier: experimental
-          workers: "2"
+          workers: "1"
           build-timeout: "600"
           baseline-timeout: "300"
           mutant-timeout: "120"
