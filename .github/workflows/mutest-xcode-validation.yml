@@ -31,7 +31,7 @@ concurrency:
 jobs:
   validate:
     name: Xcode worker acceptance and benchmarks
-    runs-on: [self-hosted, macos]
+    runs-on: macos-latest
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4

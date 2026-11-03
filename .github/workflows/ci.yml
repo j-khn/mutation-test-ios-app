@@ -39,7 +39,7 @@ permissions:
 jobs:
   test:
     name: Build and test iOS app
-    runs-on: [self-hosted, macos]
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/prepare-xcode
@@ -72,7 +72,7 @@ jobs:
     name: Mutation testing
     needs: test
     if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'workflow_dispatch'
-    runs-on: [self-hosted, macos]
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -148,7 +148,7 @@ jobs:
     if: >-
       always() && needs.test.result == 'success' &&
       ((github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
-    runs-on: [self-hosted, macos]
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -210,7 +210,7 @@ jobs:
     name: Release validation
     needs: [test, mutation-testing]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-    runs-on: [self-hosted, macos]
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/prepare-xcode

@@ -7,8 +7,8 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        export DEVELOPER_DIR="/Applications/Xcode.app/Contents/Developer"
-        test -d "$DEVELOPER_DIR" || { echo "Install Xcode.app on this runner."; exit 1; }
+        export DEVELOPER_DIR="$(xcode-select -p)"
+        test -d "$DEVELOPER_DIR" || { echo "The selected Xcode developer directory does not exist: $DEVELOPER_DIR"; exit 1; }
         echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
         xcodebuild -version
         swift --version
