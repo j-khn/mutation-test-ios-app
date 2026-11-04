@@ -10,10 +10,10 @@ on:
   workflow_dispatch:
     inputs:
       mutation_scope:
-        description: Mutate changed source files or all app and feature source files
+        description: Manual runs default to all source files; choose diff to mutate only files changed from base_sha
         type: choice
         options: [diff, full]
-        default: diff
+        default: full
       mutation_cache:
         description: Reuse mutation results (disable for a clean benchmark)
         type: boolean

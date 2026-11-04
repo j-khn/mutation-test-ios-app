@@ -51,7 +51,7 @@ The `iOS CI` workflow runs on pushes and pull requests targeting `master`, and o
 - `mutation-testing-using-mutest-swift`: runs `mutest-swift` on the same changed sources and full test target.
 - `deploy`: validates the Release build; App Store upload is not configured.
 
-For a full mutation run, open Actions, choose **iOS CI**, then **Run workflow**, and set `mutation_scope` to `full`. Turn off `mutation_cache` for a clean benchmark. The workflow uses GitHub-hosted macOS runners with Xcode, Python 3, Homebrew, and an available iPhone simulator.
+For a full upstream mutation run, open Actions, choose **iOS CI**, then **Run workflow**; `mutation_scope` defaults to `full`. Choose `diff` and set `base_sha` to limit it to changed Swift files. Turn off `mutation_cache` for a clean benchmark. The workflow uses GitHub-hosted macOS runners with Xcode, Python 3, Homebrew, and an available iPhone simulator.
 
 ## Run mutation testing locally
 
