@@ -55,7 +55,7 @@ jobs:
         id: sources
         env:
           BASE_SHA: ${{ github.event.before }}
-          SCOPE: ${{ github.event_name == 'schedule' && 'full' || 'diff' }}
+          SCOPE: ${{ github.event_name == 'push' && 'diff' || 'full' }}
         run: |
           python3 Scripts/mutation-sources.py --scope "$SCOPE" --base "$BASE_SHA" \
             --head "$GITHUB_SHA" --output mutation-reports/changed-source-files.txt --github-output
@@ -72,7 +72,7 @@ jobs:
       - name: Run mutation tests with the full test target
         if: steps.sources.outputs.has_sources == 'true'
         env:
-          SCOPE: ${{ github.event_name == 'schedule' && 'full' || 'diff' }}
+          SCOPE: ${{ github.event_name == 'push' && 'diff' || 'full' }}
         run: |
           set -euo pipefail
           args=(. --project MutationTestIOSApp.xcodeproj --scheme MutationTestIOSApp --target MutationTestIOSAppTests
@@ -150,7 +150,7 @@ jobs:
           destination-simulator: ${{ env.IOS_DESTINATION }}
           source-commit: ${{ github.sha }}
           source-base: ${{ github.event.before }}
-          source-scope: ${{ github.event_name == 'schedule' && 'all' || 'changed' }}
+          source-scope: ${{ github.event_name == 'push' && 'changed' || 'all' }}
           test-scope: all
           operator-tier: experimental
           workers: "1"
