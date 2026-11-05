@@ -2,36 +2,11 @@ name: iOS CI
 
 on:
   push:
-    branches: [master]
-  pull_request:
-    branches: [master]
+    branches: [main, master]
+  workflow_dispatch:
   schedule:
     - cron: '0 2 * * *'
-  workflow_dispatch:
-    inputs:
-      mutation_scope:
-        description: Manual runs default to all source files; choose diff to mutate only files changed from base_sha
-        type: choice
-        options: [diff, full]
-        default: full
-      mutation_cache:
-        description: Reuse mutation results (disable for a clean benchmark)
-        type: boolean
-        default: true
-      base_sha:
-        description: Optional base commit for changed-source analysis
-        type: string
-        default: ""
-      source_scope:
-        description: Mutate changed source files or all source files in the selected package
-        type: choice
-        options: [changed, all]
-        default: changed
-      test_scope:
-        description: Run changed tests, matching tests, both, or the full test plan
-        type: choice
-        options: [changed-and-matching, changed, matching, all]
-        default: changed-and-matching
+      timezone: Europe/Berlin
 
 permissions:
   contents: read
@@ -71,22 +46,21 @@ jobs:
   mutation-testing:
     name: Mutation testing
     needs: test
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'workflow_dispatch'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: ./.github/actions/prepare-xcode
       - name: Select mutation source files
         id: sources
         env:
-          BEFORE_SHA: ${{ github.event.before }}
-          BASE_OVERRIDE: ${{ inputs.base_sha }}
-          SCOPE: ${{ inputs.mutation_scope || 'diff' }}
+          BASE_SHA: ${{ github.event.before }}
+          SCOPE: ${{ github.event_name == 'schedule' && 'full' || 'diff' }}
         run: |
-          python3 Scripts/mutation-sources.py --scope "$SCOPE" --base "${BASE_OVERRIDE:-$BEFORE_SHA}" \
+          python3 Scripts/mutation-sources.py --scope "$SCOPE" --base "$BASE_SHA" \
             --head "$GITHUB_SHA" --output mutation-reports/changed-source-files.txt --github-output
+      - uses: ./.github/actions/prepare-xcode
+        if: steps.sources.outputs.has_sources == 'true'
       - name: Install swift-mutation-testing
         if: steps.sources.outputs.has_sources == 'true'
         run: |
@@ -95,19 +69,17 @@ jobs:
           brew trust ericodx/tools
           brew install swift-mutation-testing
           swift-mutation-testing --version
-      - name: Run mutation testing through Xcode
+      - name: Run mutation tests with the full test target
         if: steps.sources.outputs.has_sources == 'true'
         env:
-          SCOPE: ${{ inputs.mutation_scope || 'diff' }}
-          NO_CACHE: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutation_cache }}
+          SCOPE: ${{ github.event_name == 'schedule' && 'full' || 'diff' }}
         run: |
           set -euo pipefail
           args=(. --project MutationTestIOSApp.xcodeproj --scheme MutationTestIOSApp --target MutationTestIOSAppTests
             --destination "$IOS_DESTINATION" --operator-tier experimental --concurrency 2
-            --timeout 120 --build-timeout 600
+            --timeout 120 --build-timeout 600 --no-cache
             --xcodebuild-arg ARCHS=arm64 --xcodebuild-arg ONLY_ACTIVE_ARCH=YES
             --xcodebuild-arg CODE_SIGNING_ALLOWED=NO)
-          [[ "$NO_CACHE" == "true" ]] && args+=(--no-cache)
           if [[ "$SCOPE" == "full" ]]; then
             swift-mutation-testing "${args[@]}" --sources-path . \
               --exclude '**/Tests/**' --exclude AppTests/ --exclude '**/Package.swift' \
@@ -129,58 +101,47 @@ jobs:
           python3 Scripts/summarize-mutation-test-logs.py "$RUNNER_TEMP/swift-mutation-test-logs" | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Export mutation summaries
         if: always()
+        env:
+          HAS_SOURCES: ${{ steps.sources.outputs.has_sources }}
+          SOURCES_OUTCOME: ${{ steps.sources.outcome }}
         run: |
+          if [[ "$SOURCES_OUTCOME" != "success" ]]; then exit 0; fi
+          if [[ "$HAS_SOURCES" != "true" ]]; then
+            echo "No changed production Swift files; mutation testing skipped." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           shopt -s nullglob
           reports=(mutation-reports/*.md)
           if [[ ${#reports[@]} == 0 ]]; then echo "No mutation report produced." >> "$GITHUB_STEP_SUMMARY"; fi
           for report in "${reports[@]}"; do cat "$report" >> "$GITHUB_STEP_SUMMARY"; done
       - name: Upload mutation reports
-        if: always()
+        if: always() && steps.sources.outputs.has_sources == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: mutation-reports
           path: mutation-reports/
           if-no-files-found: warn
 
-  # Run after the other mutation job so both timing measurements are not competing for runner resources.
   mutation-testing-using-mutest-swift:
     name: Mutation testing with mutest-swift
-    needs: [test, mutation-testing]
-    if: >-
-      always() && needs.test.result == 'success' &&
-      ((github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+    needs: test
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: ./.github/actions/prepare-xcode
-      - name: Choose the comparison base
-        id: commit-range
+      - name: Check for changed production Swift files
+        id: sources
         env:
-          EVENT_NAME: ${{ github.event_name }}
-          BEFORE_SHA: ${{ github.event.before }}
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          BASE_OVERRIDE: ${{ inputs.base_sha }}
+          BASE_SHA: ${{ github.event.before }}
+          SCOPE: ${{ github.event_name == 'schedule' && 'full' || 'diff' }}
         run: |
-          set -euo pipefail
-          base="$BASE_OVERRIDE"
-          if [[ -z "$base" && "$EVENT_NAME" == "push" ]]; then base="$BEFORE_SHA"; fi
-          if [[ -z "$base" && "$EVENT_NAME" == "pull_request" ]]; then base="$PR_BASE_SHA"; fi
-          if [[ -z "$base" && "$EVENT_NAME" == "schedule" ]]; then
-            base="$(git rev-list --max-count=1 --before='24 hours ago' "$GITHUB_SHA" || true)"
-            if [[ -z "$base" ]]; then base="$(git hash-object -t tree /dev/null)"; fi
-          fi
-          echo "base=$base" >> "$GITHUB_OUTPUT"
-      - name: Restore mutest-swift cache
-        if: github.event_name != 'workflow_dispatch' || inputs.mutation_cache
-        uses: actions/cache@v4
-        with:
-          path: .mutest-swift-cache
-          key: mutest-xcode-v1-${{ runner.os }}-${{ github.ref_name }}-${{ github.sha }}
-          restore-keys: |
-            mutest-xcode-v1-${{ runner.os }}-${{ github.ref_name }}-
-      - name: Run mutest-swift with commit-based scope
+          python3 Scripts/mutation-sources.py --scope "$SCOPE" --base "$BASE_SHA" \
+            --head "$GITHUB_SHA" --output "$RUNNER_TEMP/mutest-source-files.txt" --github-output
+      - uses: ./.github/actions/prepare-xcode
+        if: steps.sources.outputs.has_sources == 'true'
+      - name: Run mutest-swift
+        if: steps.sources.outputs.has_sources == 'true'
         uses: j-khn/mutest-swift/.github/actions/run-mutation-testing@main
         with:
           project: MutationTestIOSApp.xcodeproj
@@ -188,29 +149,30 @@ jobs:
           scheme: MutationTestIOSApp
           destination-simulator: ${{ env.IOS_DESTINATION }}
           source-commit: ${{ github.sha }}
-          source-base: ${{ steps.commit-range.outputs.base }}
-          source-scope: ${{ inputs.source_scope }}
-          test-scope: ${{ inputs.test_scope }}
-          test-file-suffix: Tests.swift
+          source-base: ${{ github.event.before }}
+          source-scope: ${{ github.event_name == 'schedule' && 'all' || 'changed' }}
+          test-scope: all
           operator-tier: experimental
           workers: "1"
           build-timeout: "600"
           baseline-timeout: "300"
           mutant-timeout: "120"
-          cache-path: .mutest-swift-cache
-          no-cache: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutation_cache }}
-          no-resume: ${{ github.event_name == 'workflow_dispatch' && !inputs.mutation_cache }}
+          no-cache: "true"
+          no-resume: "true"
           maximum-integrity-warnings: "0"
           output-path: mutest-swift-reports
           xcodebuild-arg: |
             ARCHS=arm64
             ONLY_ACTIVE_ARCH=YES
             CODE_SIGNING_ALLOWED=NO
+      - name: Explain why mutation testing was skipped
+        if: steps.sources.outcome == 'success' && steps.sources.outputs.has_sources != 'true'
+        run: echo "No changed production Swift files; mutest-swift was skipped." >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
     name: Release validation
     needs: [test, mutation-testing]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
