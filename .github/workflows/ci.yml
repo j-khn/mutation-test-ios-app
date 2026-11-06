@@ -134,7 +134,7 @@ jobs:
         id: sources
         env:
           BASE_SHA: ${{ github.event.before }}
-          SCOPE: ${{ github.event_name == 'schedule' && 'full' || 'diff' }}
+          SCOPE: ${{ github.event_name == 'push' && 'diff' || 'full' }}
         run: |
           python3 Scripts/mutation-sources.py --scope "$SCOPE" --base "$BASE_SHA" \
             --head "$GITHUB_SHA" --output "$RUNNER_TEMP/mutest-source-files.txt" --github-output
