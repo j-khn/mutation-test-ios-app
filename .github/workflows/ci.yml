@@ -43,88 +43,89 @@ jobs:
           path: test-results.xcresult
           if-no-files-found: warn
 
-  mutation-testing:
-    name: Mutation testing
-    needs: test
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Select mutation source files
-        id: sources
-        env:
-          BASE_SHA: ${{ github.event.before }}
-          SCOPE: ${{ github.event_name == 'push' && 'diff' || 'full' }}
-        run: |
-          python3 Scripts/mutation-sources.py --scope "$SCOPE" --base "$BASE_SHA" \
-            --head "$GITHUB_SHA" --output mutation-reports/changed-source-files.txt --github-output
-      - uses: ./.github/actions/prepare-xcode
-        if: steps.sources.outputs.has_sources == 'true'
-      - name: Install swift-mutation-testing
-        if: steps.sources.outputs.has_sources == 'true'
-        run: |
-          set -euo pipefail
-          brew tap ericodx/homebrew-tools
-          brew trust ericodx/tools
-          brew install swift-mutation-testing
-          swift-mutation-testing --version
-      - name: Run mutation tests with the full test target
-        if: steps.sources.outputs.has_sources == 'true'
-        env:
-          SCOPE: ${{ github.event_name == 'push' && 'diff' || 'full' }}
-        run: |
-          set -euo pipefail
-          args=(. --project MutationTestIOSApp.xcodeproj --scheme MutationTestIOSApp --target MutationTestIOSAppTests
-            --destination "$IOS_DESTINATION" --operator-tier experimental --concurrency 2
-            --timeout 120 --build-timeout 600 --no-cache
-            --xcodebuild-arg ARCHS=arm64 --xcodebuild-arg ONLY_ACTIVE_ARCH=YES
-            --xcodebuild-arg CODE_SIGNING_ALLOWED=NO)
-          if [[ "$SCOPE" == "full" ]]; then
-            swift-mutation-testing "${args[@]}" --sources-path . \
-              --exclude '**/Tests/**' --exclude AppTests/ --exclude '**/Package.swift' \
-              --keep-logs "$RUNNER_TEMP/swift-mutation-test-logs/full" \
-              --output mutation-reports/full.json --markdown-output mutation-reports/full.md
-          else
-            while IFS= read -r source_file; do
-              report_id="$(printf '%s' "$source_file" | shasum -a 256 | cut -c1-12)"
-              echo "Mutating $source_file; running the full iOS test target."
-              swift-mutation-testing "${args[@]}" --sources-path "$source_file" \
-                --keep-logs "$RUNNER_TEMP/swift-mutation-test-logs/$report_id" \
-                --output "mutation-reports/$report_id.json" --markdown-output "mutation-reports/$report_id.md"
-            done < mutation-reports/changed-source-files.txt
-          fi
-      - name: Count test cases run by each mutant
-        if: always() && steps.sources.outputs.has_sources == 'true'
-        run: |
-          trap 'rm -rf -- "$RUNNER_TEMP/swift-mutation-test-logs"' EXIT
-          python3 Scripts/summarize-mutation-test-logs.py "$RUNNER_TEMP/swift-mutation-test-logs" | tee -a "$GITHUB_STEP_SUMMARY"
-      - name: Export mutation summaries
-        if: always()
-        env:
-          HAS_SOURCES: ${{ steps.sources.outputs.has_sources }}
-          SOURCES_OUTCOME: ${{ steps.sources.outcome }}
-        run: |
-          if [[ "$SOURCES_OUTCOME" != "success" ]]; then exit 0; fi
-          if [[ "$HAS_SOURCES" != "true" ]]; then
-            echo "No changed production Swift files; mutation testing skipped." >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-          shopt -s nullglob
-          reports=(mutation-reports/*.md)
-          if [[ ${#reports[@]} == 0 ]]; then echo "No mutation report produced." >> "$GITHUB_STEP_SUMMARY"; fi
-          for report in "${reports[@]}"; do cat "$report" >> "$GITHUB_STEP_SUMMARY"; done
-      - name: Upload mutation reports
-        if: always() && steps.sources.outputs.has_sources == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: mutation-reports
-          path: mutation-reports/
-          if-no-files-found: warn
+# Temporarily disabled while comparing mutest-swift and Litmus; retained for easy re-enabling.
+#   mutation-testing:
+#     name: Mutation testing
+#     needs: test
+#     runs-on: macos-latest
+#     steps:
+#       - uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0
+#       - name: Select mutation source files
+#         id: sources
+#         env:
+#           BASE_SHA: ${{ github.event.before }}
+#           SCOPE: ${{ github.event_name == 'push' && 'diff' || 'full' }}
+#         run: |
+#           python3 Scripts/mutation-sources.py --scope "$SCOPE" --base "$BASE_SHA" \
+#             --head "$GITHUB_SHA" --output mutation-reports/changed-source-files.txt --github-output
+#       - uses: ./.github/actions/prepare-xcode
+#         if: steps.sources.outputs.has_sources == 'true'
+#       - name: Install swift-mutation-testing
+#         if: steps.sources.outputs.has_sources == 'true'
+#         run: |
+#           set -euo pipefail
+#           brew tap ericodx/homebrew-tools
+#           brew trust ericodx/tools
+#           brew install swift-mutation-testing
+#           swift-mutation-testing --version
+#       - name: Run mutation tests with the full test target
+#         if: steps.sources.outputs.has_sources == 'true'
+#         env:
+#           SCOPE: ${{ github.event_name == 'push' && 'diff' || 'full' }}
+#         run: |
+#           set -euo pipefail
+#           args=(. --project MutationTestIOSApp.xcodeproj --scheme MutationTestIOSApp --target MutationTestIOSAppTests
+#             --destination "$IOS_DESTINATION" --operator-tier experimental --concurrency 2
+#             --timeout 120 --build-timeout 600 --no-cache
+#             --xcodebuild-arg ARCHS=arm64 --xcodebuild-arg ONLY_ACTIVE_ARCH=YES
+#             --xcodebuild-arg CODE_SIGNING_ALLOWED=NO)
+#           if [[ "$SCOPE" == "full" ]]; then
+#             swift-mutation-testing "${args[@]}" --sources-path . \
+#               --exclude '**/Tests/**' --exclude AppTests/ --exclude '**/Package.swift' \
+#               --keep-logs "$RUNNER_TEMP/swift-mutation-test-logs/full" \
+#               --output mutation-reports/full.json --markdown-output mutation-reports/full.md
+#           else
+#             while IFS= read -r source_file; do
+#               report_id="$(printf '%s' "$source_file" | shasum -a 256 | cut -c1-12)"
+#               echo "Mutating $source_file; running the full iOS test target."
+#               swift-mutation-testing "${args[@]}" --sources-path "$source_file" \
+#                 --keep-logs "$RUNNER_TEMP/swift-mutation-test-logs/$report_id" \
+#                 --output "mutation-reports/$report_id.json" --markdown-output "mutation-reports/$report_id.md"
+#             done < mutation-reports/changed-source-files.txt
+#           fi
+#       - name: Count test cases run by each mutant
+#         if: always() && steps.sources.outputs.has_sources == 'true'
+#         run: |
+#           trap 'rm -rf -- "$RUNNER_TEMP/swift-mutation-test-logs"' EXIT
+#           python3 Scripts/summarize-mutation-test-logs.py "$RUNNER_TEMP/swift-mutation-test-logs" | tee -a "$GITHUB_STEP_SUMMARY"
+#       - name: Export mutation summaries
+#         if: always()
+#         env:
+#           HAS_SOURCES: ${{ steps.sources.outputs.has_sources }}
+#           SOURCES_OUTCOME: ${{ steps.sources.outcome }}
+#         run: |
+#           if [[ "$SOURCES_OUTCOME" != "success" ]]; then exit 0; fi
+#           if [[ "$HAS_SOURCES" != "true" ]]; then
+#             echo "No changed production Swift files; mutation testing skipped." >> "$GITHUB_STEP_SUMMARY"
+#             exit 0
+#           fi
+#           shopt -s nullglob
+#           reports=(mutation-reports/*.md)
+#           if [[ ${#reports[@]} == 0 ]]; then echo "No mutation report produced." >> "$GITHUB_STEP_SUMMARY"; fi
+#           for report in "${reports[@]}"; do cat "$report" >> "$GITHUB_STEP_SUMMARY"; done
+#       - name: Upload mutation reports
+#         if: always() && steps.sources.outputs.has_sources == 'true'
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: mutation-reports
+#           path: mutation-reports/
+#           if-no-files-found: warn
 
   mutation-testing-using-mutest-swift:
     name: Mutation testing with mutest-swift
-    needs: [test, mutation-testing]
+    needs: test
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -230,7 +231,7 @@ jobs:
 
   deploy:
     name: Release validation
-    needs: [test, mutation-testing]
+    needs: [test, mutation-testing-using-litmus]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     runs-on: macos-latest
     steps:
