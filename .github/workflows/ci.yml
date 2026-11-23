@@ -124,7 +124,7 @@ jobs:
 
   mutation-testing-using-mutest-swift:
     name: Mutation testing with mutest-swift
-    needs: test
+    needs: [test, mutation-testing]
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -171,7 +171,7 @@ jobs:
 
   mutation-testing-using-litmus:
     name: Mutation testing with Litmus
-    needs: test
+    needs: [test, mutation-testing-using-mutest-swift]
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
