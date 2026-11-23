@@ -124,7 +124,7 @@ jobs:
 
   mutation-testing-using-mutest-swift:
     name: Mutation testing with mutest-swift
-    needs: test
+    needs: [test, mutation-testing]
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -168,6 +168,65 @@ jobs:
       - name: Explain why mutation testing was skipped
         if: steps.sources.outcome == 'success' && steps.sources.outputs.has_sources != 'true'
         run: echo "No changed production Swift files; mutest-swift was skipped." >> "$GITHUB_STEP_SUMMARY"
+
+  mutation-testing-using-litmus:
+    name: Mutation testing with Litmus
+    needs: [test, mutation-testing-using-mutest-swift]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check for production Swift sources
+        id: sources
+        env:
+          BASE_SHA: ${{ github.event.before }}
+          SCOPE: ${{ github.event_name == 'push' && 'diff' || 'full' }}
+        run: |
+          python3 Scripts/mutation-sources.py --scope "$SCOPE" --base "$BASE_SHA" \
+            --head "$GITHUB_SHA" --output "$RUNNER_TEMP/litmus-source-files.txt" --github-output
+      - uses: ./.github/actions/prepare-xcode
+        if: steps.sources.outputs.has_sources == 'true'
+      - name: Install Litmus
+        if: steps.sources.outputs.has_sources == 'true'
+        run: |
+          set -euo pipefail
+          version=0.3.2
+          archive="litmus-${version}-macos-arm64.tar.gz"
+          archive_path="$RUNNER_TEMP/$archive"
+          curl -fsSL "https://github.com/g-cqd/litmus/releases/download/v${version}/${archive}" -o "$archive_path"
+          echo "4e273655bc89a2f87b7993f1640ac835286fcd1d9f288aeaaacb8b9aea1af288  $archive_path" | shasum -a 256 --check
+          tar -xzf "$archive_path" -C "$RUNNER_TEMP"
+          litmus_dir="$RUNNER_TEMP/litmus-${version}-macos-arm64"
+          echo "$litmus_dir" >> "$GITHUB_PATH"
+          "$litmus_dir/litmus" --version
+      - name: Run Litmus
+        if: steps.sources.outputs.has_sources == 'true'
+        env:
+          BASE_SHA: ${{ github.event.before }}
+          SCOPE: ${{ github.event_name == 'push' && 'diff' || 'full' }}
+        run: |
+          set -euo pipefail
+          args=(run . --project MutationTestIOSApp.xcodeproj --scheme MutationTestIOSApp
+            --destination "$IOS_DESTINATION" --trust-project --timeout 120
+            --output "$RUNNER_TEMP/litmus-run" --report markdown
+            --xcodebuild-argument ARCHS=arm64
+            --xcodebuild-argument ONLY_ACTIVE_ARCH=YES
+            --xcodebuild-argument CODE_SIGNING_ALLOWED=NO)
+          if [[ "$SCOPE" == "diff" ]]; then
+            args+=(--diff-base "$BASE_SHA" --diff-scope files)
+          fi
+          litmus "${args[@]}" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Explain why Litmus was skipped
+        if: steps.sources.outcome == 'success' && steps.sources.outputs.has_sources != 'true'
+        run: echo "No changed production Swift files; Litmus was skipped." >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload Litmus run evidence
+        if: always() && steps.sources.outputs.has_sources == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: litmus-run
+          path: ${{ runner.temp }}/litmus-run/
+          if-no-files-found: warn
 
   deploy:
     name: Release validation
