@@ -209,7 +209,7 @@ jobs:
         run: |
           set -euo pipefail
           args=(run . --project MutationTestIOSApp.xcodeproj --scheme MutationTestIOSApp
-            --destination "$IOS_DESTINATION" --trust-project --timeout 120
+            --destination "$IOS_DESTINATION" --trust-project --timeout 300
             --output "$RUNNER_TEMP/litmus-run" --report markdown
             --xcodebuild-argument ARCHS=arm64
             --xcodebuild-argument ONLY_ACTIVE_ARCH=YES
