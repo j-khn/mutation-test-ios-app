@@ -49,6 +49,7 @@ The `iOS CI` workflow runs on pushes and pull requests targeting `master`, and o
 - `test`: builds the iOS app and runs all 50 tests on an iPhone simulator.
 - `mutation-testing`: runs `ericodx/swift-mutation-testing` on changed source files and the full test target.
 - `mutation-testing-using-mutest-swift`: runs `mutest-swift` on the same changed sources and full test target.
+- `mutation-testing-using-litmus`: downloads the latest published stable Litmus release and verifies the archive's SHA-256 digest before running it.
 - `deploy`: validates the Release build; App Store upload is not configured.
 
 For a full upstream mutation run, open Actions, choose **iOS CI**, then **Run workflow**; `mutation_scope` defaults to `full`. Choose `diff` and set `base_sha` to limit it to changed Swift files. Turn off `mutation_cache` for a clean benchmark. The workflow uses GitHub-hosted macOS runners with Xcode, Python 3, Homebrew, and an available iPhone simulator.
