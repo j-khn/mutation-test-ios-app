@@ -109,3 +109,5 @@ final class CheckoutViewModel {
         }
     }
 }
+
+// Exercise changed-source selection in the mutation action.

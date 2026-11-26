@@ -1,0 +1,69 @@
+name: Cross-repository Xcode mutation check
+
+on:
+  push:
+    branches: [codex/mutest-xcode-action-check]
+
+permissions:
+  contents: read
+
+jobs:
+  mutation:
+    name: Xcode ${{ matrix.kind }}
+    runs-on: macos-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - kind: xcode-project
+            project: MutationTestIOSApp.xcodeproj
+          - kind: xcode-workspace
+            project: MutationTestIOSApp.xcworkspace
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/prepare-xcode
+      - name: Create workspace fixture
+        if: matrix.kind == 'xcode-workspace'
+        run: |
+          mkdir -p MutationTestIOSApp.xcworkspace
+          cat > MutationTestIOSApp.xcworkspace/contents.xcworkspacedata <<'XML'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <Workspace version="1.0"><FileRef location="group:MutationTestIOSApp.xcodeproj"></FileRef></Workspace>
+          XML
+      - name: Run the remote mutation action
+        id: mutation
+        uses: j-khn/mutest-swift/.github/actions/run-mutation-testing@862837ce5d008a3b39f601efcc27ec48e2fa1870
+        with:
+          project: ${{ matrix.project }}
+          project-kind: ${{ matrix.kind }}
+          scheme: MutationTestIOSApp
+          destination-simulator: ${{ env.IOS_DESTINATION }}
+          source-commit: ${{ github.sha }}
+          source-base: origin/master
+          source-scope: changed
+          test-scope: changed-and-matching
+          operators: boolean
+          workers: '1'
+          mutant-timeout: '120'
+          artifact-name: mutation-${{ matrix.kind }}
+          xcodebuild-arg: |
+            ARCHS=arm64
+            ONLY_ACTIVE_ARCH=YES
+            CODE_SIGNING_ALLOWED=NO
+      - name: Check report scope
+        env:
+          RUN_STATUS: ${{ steps.mutation.outputs.run-status }}
+          REPORT_DIRECTORY: ${{ steps.mutation.outputs.report-directory }}
+        run: |
+          test "$RUN_STATUS" = completed
+          python3 - "$REPORT_DIRECTORY/report.json" <<'PY'
+          import json, sys
+          with open(sys.argv[1]) as f:
+              report = json.load(f)
+          assert report['scope']['sources'] == ['App/MutationTestIOSApp.swift'], report['scope']
+          assert any('CheckoutScenarioTests/' in name for name in report['scope']['tests']), report['scope']
+          assert report['summary']['generated'] > 0, report['summary']
+          PY

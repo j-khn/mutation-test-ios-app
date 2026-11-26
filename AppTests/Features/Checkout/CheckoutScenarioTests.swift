@@ -90,3 +90,5 @@ struct CheckoutScenarioTests {
         #expect(model.errorMessage == nil)
     }
 }
+
+// Exercise changed-test selection in the mutation action.
