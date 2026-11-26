@@ -193,8 +193,7 @@ jobs:
       - name: Clean mutation temporary files
         if: always()
         run: |
-          rm -rf -- "$RUNNER_TEMP/mutest-swift-project" "$RUNNER_TEMP/mutest-swift-reports" \\
-            "$RUNNER_TEMP/mutest-home" "$RUNNER_TEMP/swiftpm-module-cache" "$RUNNER_TEMP/clang-module-cache"
+          rm -rf -- "$RUNNER_TEMP/mutest-swift-project" "$RUNNER_TEMP/mutest-swift-reports" "$RUNNER_TEMP/mutest-home" "$RUNNER_TEMP/swiftpm-module-cache" "$RUNNER_TEMP/clang-module-cache"
       - name: Explain why mutation testing was skipped
         if: steps.sources.outcome == 'success' && steps.sources.outputs.has_sources != 'true'
         run: echo "No changed production Swift files; mutest-swift was skipped." >> "$GITHUB_STEP_SUMMARY"
