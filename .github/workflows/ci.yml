@@ -16,7 +16,7 @@ jobs:
     name: Build and test iOS app
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: ./.github/actions/prepare-xcode
       - name: Check project structure
         run: |
@@ -37,7 +37,7 @@ jobs:
             ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ios-test-results
           path: test-results.xcresult
@@ -49,7 +49,7 @@ jobs:
 #     needs: test
 #     runs-on: macos-latest
 #     steps:
-#       - uses: actions/checkout@v4
+#       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 #         with:
 #           fetch-depth: 0
 #       - name: Select mutation source files
@@ -117,7 +117,7 @@ jobs:
 #           for report in "${reports[@]}"; do cat "$report" >> "$GITHUB_STEP_SUMMARY"; done
 #       - name: Upload mutation reports
 #         if: always() && steps.sources.outputs.has_sources == 'true'
-#         uses: actions/upload-artifact@v4
+#         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
 #         with:
 #           name: mutation-reports
 #           path: mutation-reports/
@@ -127,8 +127,10 @@ jobs:
     name: Mutation testing with mutest-swift
     needs: test
     runs-on: macos-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           fetch-depth: 0
       - name: Check for changed production Swift files
@@ -139,13 +141,24 @@ jobs:
         run: |
           python3 Scripts/mutation-sources.py --scope "$SCOPE" --base "$BASE_SHA" \
             --head "$GITHUB_SHA" --output "$RUNNER_TEMP/mutest-source-files.txt" --github-output
+      - name: Create ephemeral mutation checkout
+        if: steps.sources.outputs.has_sources == 'true'
+        run: |
+          set -euo pipefail
+          git clone --no-hardlinks "$GITHUB_WORKSPACE" "$RUNNER_TEMP/mutest-swift-project"
+          git -C "$RUNNER_TEMP/mutest-swift-project" checkout --detach "$GITHUB_SHA"
+          mkdir -p "$RUNNER_TEMP/mutest-home" "$RUNNER_TEMP/swiftpm-module-cache" "$RUNNER_TEMP/clang-module-cache"
       - uses: ./.github/actions/prepare-xcode
         if: steps.sources.outputs.has_sources == 'true'
       - name: Run mutest-swift
         if: steps.sources.outputs.has_sources == 'true'
-        uses: j-khn/mutest-swift/.github/actions/run-mutation-testing@main
+        uses: j-khn/mutest-swift/.github/actions/run-mutation-testing@9f8ec7ac1136d6a4305b96cafcadb2c9c94c1943 # v0.3.3
+        env:
+          HOME: ${{ runner.temp }}/mutest-home
+          SWIFTPM_MODULECACHE_OVERRIDE: ${{ runner.temp }}/swiftpm-module-cache
+          CLANG_MODULE_CACHE_PATH: ${{ runner.temp }}/clang-module-cache
         with:
-          project: MutationTestIOSApp.xcodeproj
+          project: ${{ runner.temp }}/mutest-swift-project/MutationTestIOSApp.xcodeproj
           project-kind: xcode-project
           scheme: MutationTestIOSApp
           destination-simulator: ${{ env.IOS_DESTINATION }}
@@ -161,11 +174,27 @@ jobs:
           no-cache: "true"
           no-resume: "true"
           maximum-integrity-warnings: "0"
-          output-path: mutest-swift-reports
+          output-path: ${{ runner.temp }}/mutest-swift-reports
           xcodebuild-arg: |
             ARCHS=arm64
             ONLY_ACTIVE_ARCH=YES
             CODE_SIGNING_ALLOWED=NO
+      - name: Assert mutation checkouts stayed clean
+        if: always() && steps.sources.outputs.has_sources == 'true'
+        run: |
+          set -euo pipefail
+          for repo in "$GITHUB_WORKSPACE" "$RUNNER_TEMP/mutest-swift-project"; do
+            if [[ -d "$repo/.git" ]] && [[ -n "$(git -C "$repo" status --porcelain)" ]]; then
+              echo "Mutation testing modified checkout: $repo" >&2
+              git -C "$repo" status --short >&2
+              exit 1
+            fi
+          done
+      - name: Clean mutation temporary files
+        if: always()
+        run: |
+          rm -rf -- "$RUNNER_TEMP/mutest-swift-project" "$RUNNER_TEMP/mutest-swift-reports" \\
+            "$RUNNER_TEMP/mutest-home" "$RUNNER_TEMP/swiftpm-module-cache" "$RUNNER_TEMP/clang-module-cache"
       - name: Explain why mutation testing was skipped
         if: steps.sources.outcome == 'success' && steps.sources.outputs.has_sources != 'true'
         run: echo "No changed production Swift files; mutest-swift was skipped." >> "$GITHUB_STEP_SUMMARY"
@@ -175,7 +204,7 @@ jobs:
     needs: [test, mutation-testing-using-mutest-swift]
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           fetch-depth: 0
       - name: Check for production Swift sources
@@ -263,7 +292,7 @@ jobs:
         run: echo "No changed production Swift files; Litmus was skipped." >> "$GITHUB_STEP_SUMMARY"
       - name: Upload Litmus run evidence
         if: always() && steps.sources.outputs.has_sources == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: litmus-run
           path: ${{ runner.temp }}/litmus-run/
@@ -275,7 +304,7 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: ./.github/actions/prepare-xcode
       - name: Validate iOS release build
         run: |
