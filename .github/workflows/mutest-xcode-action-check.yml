@@ -16,8 +16,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - kind: xcode-project
-            project: MutationTestIOSApp.xcodeproj
           - kind: xcode-workspace
             project: MutationTestIOSApp.xcworkspace
     steps:
@@ -35,7 +33,7 @@ jobs:
           XML
       - name: Run the remote mutation action
         id: mutation
-        uses: j-khn/mutest-swift/.github/actions/run-mutation-testing@862837ce5d008a3b39f601efcc27ec48e2fa1870
+        uses: j-khn/mutest-swift/.github/actions/run-mutation-testing@bb6137eaa1b007f6e547d20d39bf819c771b96f3
         with:
           project: ${{ matrix.project }}
           project-kind: ${{ matrix.kind }}
